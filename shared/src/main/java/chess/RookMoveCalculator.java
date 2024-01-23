@@ -1,6 +1,5 @@
 package chess;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collection;
 
@@ -32,12 +31,6 @@ public class RookMoveCalculator extends PieceMoveCalculator{
                 }
             }
         }
-//        ChessPosition test1 = new ChessPosition(4, 1);
-//        ChessPosition test2 = new ChessPosition(6, 1);
-//        System.out.print(test1.findStraightPositionsBetween(test2));
-//        System.out.print("\nhasClearStraightPath: ");
-//        System.out.print(hasClearStraightPath(test1, test2));
-
         return moves;
     }
 
@@ -55,5 +48,4 @@ public class RookMoveCalculator extends PieceMoveCalculator{
         }
         return isClear;
     }
-
 }

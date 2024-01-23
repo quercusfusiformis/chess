@@ -1,7 +1,6 @@
 package chess;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Objects;
 
 /**
@@ -74,6 +73,51 @@ public class ChessPosition {
             }
         }
         return intermediates;
+    }
+
+    public ArrayList<Integer[]> findDiagonalPositionsBetween(ChessPosition other) {
+        // Handling of bishop-style paths
+        int otherRow = other.getRow();
+        int otherCol = other.getColumn();
+        if (this.row == otherRow && this.col == otherCol) { return new ArrayList<>(); }
+        // Generate all diagonal adjustments to see if other is in any diagonal
+        Integer[] adjustToOther = getDiagonalAdjustment(otherRow, otherCol);
+
+        // Find which direction to search back and find all positions in between the two specified positions
+        Integer [] backAdjuster = {};
+        if (adjustToOther[0] > 0 && adjustToOther[1] > 0) { backAdjuster = new Integer[]{-1, -1}; }
+        else if (adjustToOther[0] > 0 && adjustToOther[1] < 0) { backAdjuster = new Integer[]{-1, 1}; }
+        else if (adjustToOther[0] < 0 && adjustToOther[1] > 0) { backAdjuster = new Integer[]{1, -1}; }
+        else if (adjustToOther[0] < 0 && adjustToOther[1] < 0) { backAdjuster = new Integer[]{1, 1}; }
+        ArrayList<Integer[]> intermediates = new ArrayList<>();
+        Integer [] currCoord = {otherRow, otherCol};
+        while(!(currCoord[0] == this.row) && !(currCoord[1] == this.col)) {
+            currCoord = new Integer[]{ currCoord[0] + backAdjuster[0], currCoord[1] + backAdjuster[1]};
+            if (currCoord[0] == this.row && currCoord[1] == this.col) { break; }
+            else { intermediates.add(currCoord); }
+        }
+        return intermediates;
+    }
+
+    private Integer[] getDiagonalAdjustment(int otherRow, int otherCol) {
+        ArrayList<Integer[]> diagAdjusts = new ArrayList<>();
+        for(int i = 1; i < 8; i++) {
+            Integer [] perm1 = {i, i};
+            Integer [] perm2 = {i, -i};
+            Integer [] perm3 = {-i, i};
+            Integer [] perm4 = {-i, -i};
+            diagAdjusts.add(perm1);
+            diagAdjusts.add(perm2);
+            diagAdjusts.add(perm3);
+            diagAdjusts.add(perm4);
+        }
+        Integer [] adjustToOther = {};
+        for(Integer [] combo : diagAdjusts) {
+            int adjRow = this.row + combo[0];
+            int adjCol = this.col + combo[1];
+            if (adjRow == otherRow && adjCol == otherCol) { adjustToOther = combo; }
+        }
+        return adjustToOther;
     }
 
     @Override
