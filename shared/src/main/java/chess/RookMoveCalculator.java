@@ -12,7 +12,7 @@ public class RookMoveCalculator extends PieceMoveCalculator{
     public Collection<ChessMove> calculateMoves() {
         ChessGame.TeamColor movePieceColor = this.board.getPiece(this.position).getTeamColor();
         ArrayList<ChessMove> moves = new ArrayList<>();
-        // Add characteristic rook moves
+        // Adds characteristic rook moves
         int row = this.position.getRow();
         int col = this.position.getColumn();
         int [][] combos = { {1, 0}, {2, 0}, {3, 0}, {4, 0}, {5, 0}, {6, 0}, {7, 0}, {-1, 0}, {-2, 0}, {-3, 0}, {-4, 0},
@@ -23,7 +23,7 @@ public class RookMoveCalculator extends PieceMoveCalculator{
             int newCol = col + combo[1];
             ChessPosition tmpPos = new ChessPosition(newRow, newCol);
             if (!tmpPos.outOfBounds()) {
-                if(!(hasClearStraightPath(this.position, tmpPos))) { continue; }
+                if(!(super.hasClearStraightPath(this.position, tmpPos))) { continue; }
                 ChessPiece jumpedPiece = this.board.getPiece((tmpPos));
                 if (jumpedPiece == null) { moves.add(new ChessMove(this.position, tmpPos, null)); }
                 else if (!(jumpedPiece.getTeamColor() == movePieceColor)) {
@@ -32,20 +32,5 @@ public class RookMoveCalculator extends PieceMoveCalculator{
             }
         }
         return moves;
-    }
-
-    private boolean hasClearStraightPath(ChessPosition first, ChessPosition second) {
-        // ChessPositions passed in must be straight across from each other. Undefined behavior if not
-        ArrayList<Integer[]> intermediates = first.findStraightPositionsBetween(second);
-        boolean isClear = true;
-        for(Integer [] intermediate : intermediates) {
-            ChessPosition testPos = new ChessPosition(intermediate[0], intermediate[1]);
-            boolean occupied = (!(this.board.getPiece(testPos) == null));
-            if (occupied) {
-                isClear = false;
-                break;
-            }
-        }
-        return isClear;
     }
 }

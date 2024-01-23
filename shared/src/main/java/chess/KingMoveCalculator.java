@@ -12,7 +12,7 @@ public class KingMoveCalculator extends  PieceMoveCalculator{
     public Collection<ChessMove> calculateMoves() {
         ChessGame.TeamColor movePieceColor = this.board.getPiece(this.position).getTeamColor();
         ArrayList<ChessMove> moves = new ArrayList<>();
-        // Add characteristic king moves
+        // Adds characteristic king moves
         int row = this.position.getRow();
         int col = this.position.getColumn();
         int [][] combos = { {1, 0}, {0, 1}, {-1, 0}, {0, -1}, {1, 1}, {1, -1}, {-1, 1}, {-1, -1} };

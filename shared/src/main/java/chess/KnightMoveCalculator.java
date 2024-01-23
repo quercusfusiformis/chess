@@ -12,7 +12,7 @@ public class KnightMoveCalculator extends PieceMoveCalculator {
     public Collection<ChessMove> calculateMoves() {
         ChessGame.TeamColor movePieceColor = this.board.getPiece(this.position).getTeamColor();
         ArrayList<ChessMove> moves = new ArrayList<>();
-        // Add characteristic knight moves
+        // Adds characteristic knight moves
         int row = this.position.getRow();
         int col = this.position.getColumn();
         int [][] combos = { {1,2}, {1, -2}, {-1, 2}, {-1, -2}, {2, 1}, {2, -1}, {-2, 1}, {-2, -1} };
