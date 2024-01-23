@@ -1,5 +1,6 @@
 package chess;
 
+import java.util.ArrayList;
 import java.util.Collection;
 
 public class PawnMoveCalculator extends PieceMoveCalculator {
@@ -16,15 +17,36 @@ public class PawnMoveCalculator extends PieceMoveCalculator {
         // If move takes pawn to edge of board, promotion move: move needs to be listed 4 times with all possible pieces
         //     Queen, Rook, Bishop, Knight
 
-        // Defines default position
-//        ChessPosition defaultPos;
-//        ChessGame.TeamColor movePieceColor = this.board.getPiece(this.position).getTeamColor();
-//        if (movePieceColor == ChessGame.TeamColor.WHITE) {
-//            defaultPos = new ChessPosition(2, this.position.getColumn());
-//        }
-//        else if (movePieceColor == ChessGame.TeamColor.BLACK) {
-//            defaultPos = new ChessPosition(7, this.position.getColumn());
-//        }
+        ArrayList<ChessMove> moves = new ArrayList<>();
+        int row = this.position.getRow();
+        int col = this.position.getColumn();
+
+        // Defines default position for initial movement and opposite side of board for promotion
+        ChessPosition defaultPos;
+        int oppositeSide;
+        ChessGame.TeamColor movePieceColor = this.board.getPiece(this.position).getTeamColor();
+        if (movePieceColor == ChessGame.TeamColor.WHITE) {
+            defaultPos = new ChessPosition(2, this.position.getColumn());
+            oppositeSide = 8;
+        }
+        else if (movePieceColor == ChessGame.TeamColor.BLACK) {
+            defaultPos = new ChessPosition(7, this.position.getColumn());
+            oppositeSide = 1;
+        }
+
+        // Checks left and right sides for opponents to enable diagonal movement
+        ChessPosition forwardleft;
+        ChessPosition forwardright;
+        if (movePieceColor == ChessGame.TeamColor.WHITE) {
+            forwardleft = new ChessPosition(row + 1, col - 1);
+            forwardright = new ChessPosition(row + 1, col + 1);
+        }
+        else if (movePieceColor == ChessGame.TeamColor.BLACK) {
+            forwardleft = new ChessPosition(row - 1, col - 1);
+            forwardright = new ChessPosition(row - 1, col + 1);
+
+        }
+        // Handle all move specs at once, and do a sweep on each one to see if it ends on the opposite side of the board
         return null;
     }
 }
