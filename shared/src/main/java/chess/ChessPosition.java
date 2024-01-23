@@ -33,6 +33,10 @@ public class ChessPosition {
         return this.col;
     }
 
+    public boolean outOfBounds() {
+        return (this.row < 1 || this.row > 8 || this.col < 1|| this.col > 8);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -44,5 +48,10 @@ public class ChessPosition {
     @Override
     public int hashCode() {
         return Objects.hash(row, col);
+    }
+
+    @Override
+    public String toString() {
+        return "(" + this.row + "," + this.col + ")";
     }
 }
