@@ -53,6 +53,14 @@ public class PawnMoveCalculator extends PieceMoveCalculator {
         if ((frontPiece == null) && (twoInFrontPiece == null) && (this.position == defaultPos)) {
             twoInFrontAvailable = true;
         }
+        System.out.print(frontPiece);
+        System.out.print(twoInFrontPiece);
+        System.out.print(frontOccupied);
+        System.out.print(twoInFrontAvailable);
+        System.out.print(defaultPos);
+        System.out.print(this.position);
+        System.out.print(defaultPos == this.position);
+        System.out.print(defaultPos.getRow() == this.position.getRow() && defaultPos.getColumn() == this.position.getColumn());
 
         // Checks left and right sides for opponents to enable diagonal movement
         ChessPosition forwardleftPos;
