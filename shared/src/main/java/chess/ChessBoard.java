@@ -20,7 +20,7 @@ public class ChessBoard {
      * @param piece    the piece to add
      */
     public void addPiece(ChessPosition position, ChessPiece piece) {
-        throw new RuntimeException("Not implemented");
+        this.board[position.getRow()][position.getColumn()] = piece;
     }
 
     /**
@@ -31,7 +31,7 @@ public class ChessBoard {
      * position
      */
     public ChessPiece getPiece(ChessPosition position) {
-        throw new RuntimeException("Not implemented");
+        return this.board[position.getRow()][position.getColumn()];
     }
 
     /**
@@ -39,18 +39,18 @@ public class ChessBoard {
      * (How the game of chess normally starts)
      */
     public void resetBoard() {
-        // Sets white pieces
-        ChessGame.TeamColor white = ChessGame.TeamColor.WHITE;
-        this.board[0][0] = new ChessPiece(white, ChessPiece.PieceType.ROOK);
-        this.board[0][1] = new ChessPiece(white, ChessPiece.PieceType.KNIGHT);
-        this.board[0][2] = new ChessPiece(white, ChessPiece.PieceType.BISHOP);
-        this.board[0][3] = new ChessPiece(white, ChessPiece.PieceType.QUEEN);
-        this.board[0][4] = new ChessPiece(white, ChessPiece.PieceType.KING);
-        this.board[0][5] = new ChessPiece(white, ChessPiece.PieceType.BISHOP);
-        this.board[0][6] = new ChessPiece(white, ChessPiece.PieceType.KNIGHT);
-        this.board[0][7] = new ChessPiece(white, ChessPiece.PieceType.ROOK);
+        // Sets black pieces
+        ChessGame.TeamColor black = ChessGame.TeamColor.BLACK;
+        this.board[0][0] = new ChessPiece(black, ChessPiece.PieceType.ROOK);
+        this.board[0][1] = new ChessPiece(black, ChessPiece.PieceType.KNIGHT);
+        this.board[0][2] = new ChessPiece(black, ChessPiece.PieceType.BISHOP);
+        this.board[0][3] = new ChessPiece(black, ChessPiece.PieceType.QUEEN);
+        this.board[0][4] = new ChessPiece(black, ChessPiece.PieceType.KING);
+        this.board[0][5] = new ChessPiece(black, ChessPiece.PieceType.BISHOP);
+        this.board[0][6] = new ChessPiece(black, ChessPiece.PieceType.KNIGHT);
+        this.board[0][7] = new ChessPiece(black, ChessPiece.PieceType.ROOK);
         for(int j = 0; j < 8; j++) {
-            this.board[1][j] = new ChessPiece(white, ChessPiece.PieceType.PAWN);
+            this.board[1][j] = new ChessPiece(black, ChessPiece.PieceType.PAWN);
         }
         // Sets middle of board as empty
         for(int i = 2; i < 6; i++) {
@@ -58,18 +58,18 @@ public class ChessBoard {
                 this.board[i][j] = null;
             }
         }
-        // Sets black pieces
-        ChessGame.TeamColor black = ChessGame.TeamColor.BLACK;
+        // Sets white pieces
+        ChessGame.TeamColor white = ChessGame.TeamColor.WHITE;
         for(int j = 0; j < 8; j++) {
-            this.board[6][j] = new ChessPiece(black, ChessPiece.PieceType.PAWN);
+            this.board[6][j] = new ChessPiece(white, ChessPiece.PieceType.PAWN);
         }
-        this.board[7][0] = new ChessPiece(black, ChessPiece.PieceType.ROOK);
-        this.board[7][1] = new ChessPiece(black, ChessPiece.PieceType.KNIGHT);
-        this.board[7][2] = new ChessPiece(black, ChessPiece.PieceType.BISHOP);
-        this.board[7][3] = new ChessPiece(black, ChessPiece.PieceType.QUEEN);
-        this.board[7][4] = new ChessPiece(black, ChessPiece.PieceType.KING);
-        this.board[7][5] = new ChessPiece(black, ChessPiece.PieceType.BISHOP);
-        this.board[7][6] = new ChessPiece(black, ChessPiece.PieceType.KNIGHT);
-        this.board[7][7] = new ChessPiece(black, ChessPiece.PieceType.ROOK);
+        this.board[7][0] = new ChessPiece(white, ChessPiece.PieceType.ROOK);
+        this.board[7][1] = new ChessPiece(white, ChessPiece.PieceType.KNIGHT);
+        this.board[7][2] = new ChessPiece(white, ChessPiece.PieceType.BISHOP);
+        this.board[7][3] = new ChessPiece(white, ChessPiece.PieceType.QUEEN);
+        this.board[7][4] = new ChessPiece(white, ChessPiece.PieceType.KING);
+        this.board[7][5] = new ChessPiece(white, ChessPiece.PieceType.BISHOP);
+        this.board[7][6] = new ChessPiece(white, ChessPiece.PieceType.KNIGHT);
+        this.board[7][7] = new ChessPiece(white, ChessPiece.PieceType.ROOK);
     }
 }
