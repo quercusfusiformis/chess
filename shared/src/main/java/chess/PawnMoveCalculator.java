@@ -48,19 +48,15 @@ public class PawnMoveCalculator extends PieceMoveCalculator {
             twoInFrontPos = new ChessPosition(row - 2, col);
         }
         ChessPiece frontPiece = this.board.getPiece(frontPos);
-        ChessPiece twoInFrontPiece = this.board.getPiece(twoInFrontPos);
         if ((frontPiece == null)) {frontOccupied = false; }
-        if ((frontPiece == null) && (twoInFrontPiece == null) && (this.position == defaultPos)) {
+        ChessPiece twoInFrontPiece = null;
+        if (!(twoInFrontPos.outOfBounds())) { twoInFrontPiece = this.board.getPiece(twoInFrontPos); }
+        // Even if twoInFrontPos is off the board and thus set to null (lines 52-53), piece will never be near default
+        //     Thus, will always fail the check on lines 56-57
+        if ((frontPiece == null) && (twoInFrontPiece == null) && (this.position.getRow() == defaultPos.getRow())
+                && (this.position.getColumn() == defaultPos.getColumn())) {
             twoInFrontAvailable = true;
         }
-        System.out.print(frontPiece);
-        System.out.print(twoInFrontPiece);
-        System.out.print(frontOccupied);
-        System.out.print(twoInFrontAvailable);
-        System.out.print(defaultPos);
-        System.out.print(this.position);
-        System.out.print(defaultPos == this.position);
-        System.out.print(defaultPos.getRow() == this.position.getRow() && defaultPos.getColumn() == this.position.getColumn());
 
         // Checks left and right sides for opponents to enable diagonal movement
         ChessPosition forwardleftPos;
@@ -88,14 +84,13 @@ public class PawnMoveCalculator extends PieceMoveCalculator {
         if (!(forwardrightOccupied)) { proposedMoves.add(forwardrightPos); }
         for(ChessPosition pMove : proposedMoves) {
             int pRow = pMove.getRow();
-            int pCol = pMove.getColumn();
-            if (movePieceColor == ChessGame.TeamColor.WHITE && pRow == 8) {
+            if (movePieceColor == ChessGame.TeamColor.WHITE && pRow == oppositeSide) {
                 moves.add(new ChessMove(this.position, pMove, ChessPiece.PieceType.QUEEN));
                 moves.add(new ChessMove(this.position, pMove, ChessPiece.PieceType.BISHOP));
                 moves.add(new ChessMove(this.position, pMove, ChessPiece.PieceType.KNIGHT));
                 moves.add(new ChessMove(this.position, pMove, ChessPiece.PieceType.ROOK));
             }
-            else if (movePieceColor == ChessGame.TeamColor.BLACK && pRow == 1) {
+            else if (movePieceColor == ChessGame.TeamColor.BLACK && pRow == oppositeSide) {
                 moves.add(new ChessMove(this.position, pMove, ChessPiece.PieceType.QUEEN));
                 moves.add(new ChessMove(this.position, pMove, ChessPiece.PieceType.BISHOP));
                 moves.add(new ChessMove(this.position, pMove, ChessPiece.PieceType.KNIGHT));

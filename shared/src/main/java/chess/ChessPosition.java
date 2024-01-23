@@ -122,6 +122,7 @@ public class ChessPosition {
 
     @Override
     public boolean equals(Object o) {
+        // May not function as intended: needs further attention
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         ChessPosition that = (ChessPosition) o;
