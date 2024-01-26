@@ -1,5 +1,7 @@
 package chess;
 
+import chess.move_calculators.*;
+
 import java.util.Collection;
 import java.util.Objects;
 

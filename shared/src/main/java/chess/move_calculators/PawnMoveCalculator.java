@@ -1,10 +1,12 @@
-package chess;
+package chess.move_calculators;
+
+import chess.*;
 
 import java.util.ArrayList;
 import java.util.Collection;
 
 public class PawnMoveCalculator extends PieceMoveCalculator {
-    PawnMoveCalculator(ChessBoard board, ChessPosition position) {
+    public PawnMoveCalculator(ChessBoard board, ChessPosition position) {
         super(board, position);
     }
 
