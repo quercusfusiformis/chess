@@ -126,7 +126,8 @@ public class ChessPosition {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         ChessPosition that = (ChessPosition) o;
-        return row == that.row && col == that.col;
+        return (this.row == that.row && this.col == that.col);
+
     }
 
     @Override
