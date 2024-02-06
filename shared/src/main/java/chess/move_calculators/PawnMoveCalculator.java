@@ -54,7 +54,7 @@ public class PawnMoveCalculator extends PieceMoveCalculator {
         ChessPiece twoInFrontPiece = null;
         if (!(twoInFrontPos.outOfBounds())) { twoInFrontPiece = this.board.getPiece(twoInFrontPos); }
         // Even if twoInFrontPos is off the board and thus set to null (lines 52-53), piece will never be near default
-        //     Thus, will always fail the check on lines 56-57
+        //     Thus, will always fail the check on lines 58-59
         if ((frontPiece == null) && (twoInFrontPiece == null) && (this.position.getRow() == defaultPos.getRow())
                 && (this.position.getColumn() == defaultPos.getColumn())) {
             twoInFrontAvailable = true;
