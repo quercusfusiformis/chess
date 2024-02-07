@@ -155,7 +155,9 @@ public class ChessGame {
      * @return True if the specified team is in checkmate
      */
     public boolean isInCheckmate(TeamColor teamColor) {
-        throw new RuntimeException("Not implemented");
+        boolean inCheck = isInCheck(teamColor);
+        HashSet<ChessMove> validMoves = (HashSet<ChessMove>) getValidTeamMoves(teamColor);
+        return (inCheck && validMoves.isEmpty());
     }
 
     /**
@@ -166,7 +168,9 @@ public class ChessGame {
      * @return True if the specified team is in stalemate, otherwise false
      */
     public boolean isInStalemate(TeamColor teamColor) {
-        throw new RuntimeException("Not implemented");
+        boolean inCheck = isInCheck(teamColor);
+        HashSet<ChessMove> validMoves = (HashSet<ChessMove>) getValidTeamMoves(teamColor);
+        return (!inCheck && validMoves.isEmpty());
     }
 
     /**
@@ -232,5 +236,14 @@ public class ChessGame {
     private Collection<ChessMove> getPossibleTeamMoves(TeamColor team) {
         Collection<ChessPosition> teamPositions = getTeamPiecePositions(team);
         return getPossiblePieceMoves(teamPositions);
+    }
+
+    private Collection<ChessMove> getValidTeamMoves(TeamColor team) {
+        Collection<ChessPosition> teamPositions = getTeamPiecePositions(team);
+        HashSet<ChessMove> validMoves = new HashSet<>();
+        for (ChessPosition position : teamPositions) {
+            validMoves.addAll(validMoves(position));
+        }
+        return validMoves;
     }
 }
