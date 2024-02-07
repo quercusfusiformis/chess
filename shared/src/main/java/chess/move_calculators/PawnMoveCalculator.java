@@ -73,10 +73,19 @@ public class PawnMoveCalculator extends PieceMoveCalculator {
             forwardleftPos = new ChessPosition(row - 1, col - 1);
             forwardrightPos = new ChessPosition(row - 1, col + 1);
         }
-        ChessPiece flPiece = this.board.getPiece(forwardleftPos);
-        ChessPiece frPiece = this.board.getPiece(forwardrightPos);
-        if (!(flPiece == null) && !(flPiece.getTeamColor() == movePieceColor)) {forwardleftOccupied = false; }
-        if (!(frPiece == null) && !(frPiece.getTeamColor() == movePieceColor)) {forwardrightOccupied = false; }
+
+        if (!(forwardleftPos.outOfBounds())) {
+            ChessPiece flPiece = this.board.getPiece(forwardleftPos);
+            if (!(flPiece == null) && !(flPiece.getTeamColor() == movePieceColor)) {
+                forwardleftOccupied = false;
+            }
+        }
+        if (!(forwardrightPos.outOfBounds())) {
+            ChessPiece frPiece = this.board.getPiece(forwardrightPos);
+            if (!(frPiece == null) && !(frPiece.getTeamColor() == movePieceColor)) {
+                forwardrightOccupied = false;
+            }
+        }
 
         // Handle all move specs at once, and do a sweep on each one to see if it ends on the opposite side of the board
         ArrayList<ChessPosition> proposedMoves = new ArrayList<>();

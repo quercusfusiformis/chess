@@ -1,6 +1,5 @@
 package chess;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -73,11 +72,11 @@ public class ChessGame {
      * @throws InvalidMoveException if move is invalid
      */
     public void makeMove(ChessMove move) throws InvalidMoveException {
+        TeamColor currPieceTeam = this.board.getPiece(move.getStartPosition()).getTeamColor();
         HashSet<ChessMove> validMoves = (HashSet<ChessMove>) validMoves(move.getStartPosition());
-        if (validMoves.contains(move)) {
-            TeamColor currTeam = this.board.getPiece(move.getStartPosition()).getTeamColor();
+        if (validMoves.contains(move) && currPieceTeam == getTeamTurn()) {
             applyMove(move);
-            if (currTeam == TeamColor.WHITE) { setTeamTurn(TeamColor.BLACK); }
+            if (getTeamTurn() == TeamColor.WHITE) { setTeamTurn(TeamColor.BLACK); }
             else { setTeamTurn(TeamColor.WHITE); }
         }
         else { throw new InvalidMoveException("Invalid move."); }
