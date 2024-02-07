@@ -20,19 +20,6 @@ public class ChessPiece {
         this.type = type;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        ChessPiece that = (ChessPiece) o;
-        return color == that.color && type == that.type;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(color, type);
-    }
-
     /**
      * The various different chess piece options
      */
@@ -76,4 +63,22 @@ public class ChessPiece {
             case PAWN -> new PawnMoveCalculator(board, myPosition).calculateMoves();
         };
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ChessPiece that = (ChessPiece) o;
+        return color == that.color && type == that.type;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(color, type);
+    }
+
+    public ChessPiece deepcopy() {
+        return new ChessPiece(this.color, this.type);
+    }
+
 }

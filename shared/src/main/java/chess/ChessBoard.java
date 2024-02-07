@@ -9,7 +9,7 @@ import java.util.Arrays;
  * signature of the existing methods.
  */
 public class ChessBoard {
-    private ChessPiece[][] board = new ChessPiece[8][8];
+    private final ChessPiece[][] board = new ChessPiece[8][8];
 
     public ChessBoard() {}
 
@@ -88,6 +88,18 @@ public class ChessBoard {
     @Override
     public int hashCode() {
         return Arrays.deepHashCode(board);
+    }
+
+    public ChessBoard deepcopy() {
+        ChessBoard rBoard = new ChessBoard();
+        for (int i = 0; i < 8; i++) {
+            for (int j = 0; j < 8; j++) {
+                ChessPiece piece = this.board[i][j];
+                if (piece == null) { rBoard.board[i][j] = null; }
+                else { rBoard.board[i][j] = piece.deepcopy(); }
+            }
+        }
+        return rBoard;
     }
 
     @Override
