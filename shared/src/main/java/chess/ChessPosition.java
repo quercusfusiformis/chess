@@ -10,8 +10,8 @@ import java.util.Objects;
  * signature of the existing methods.
  */
 public class ChessPosition {
-    private int row;
-    private int col;
+    private final int row;
+    private final int col;
 
     public ChessPosition(int row, int col) {
         this.row = row;
@@ -84,11 +84,7 @@ public class ChessPosition {
         Integer[] adjustToOther = getDiagonalAdjustment(otherRow, otherCol);
 
         // Find which direction to search back and find all positions in between the two specified positions
-        Integer [] backAdjuster = {};
-        if (adjustToOther[0] > 0 && adjustToOther[1] > 0) { backAdjuster = new Integer[]{-1, -1}; }
-        else if (adjustToOther[0] > 0 && adjustToOther[1] < 0) { backAdjuster = new Integer[]{-1, 1}; }
-        else if (adjustToOther[0] < 0 && adjustToOther[1] > 0) { backAdjuster = new Integer[]{1, -1}; }
-        else if (adjustToOther[0] < 0 && adjustToOther[1] < 0) { backAdjuster = new Integer[]{1, 1}; }
+        Integer[] backAdjuster = getBackadjuster(adjustToOther);
         ArrayList<Integer[]> intermediates = new ArrayList<>();
         Integer [] currCoord = {otherRow, otherCol};
         while(!(currCoord[0] == this.row) && !(currCoord[1] == this.col)) {
@@ -97,6 +93,15 @@ public class ChessPosition {
             else { intermediates.add(currCoord); }
         }
         return intermediates;
+    }
+
+    private static Integer[]  getBackadjuster(Integer[] adjustToOther) {
+        Integer [] backAdjuster = {};
+        if (adjustToOther[0] > 0 && adjustToOther[1] > 0) { backAdjuster = new Integer[]{-1, -1}; }
+        else if (adjustToOther[0] > 0 && adjustToOther[1] < 0) { backAdjuster = new Integer[]{-1, 1}; }
+        else if (adjustToOther[0] < 0 && adjustToOther[1] > 0) { backAdjuster = new Integer[]{1, -1}; }
+        else if (adjustToOther[0] < 0 && adjustToOther[1] < 0) { backAdjuster = new Integer[]{1, 1}; }
+        return backAdjuster;
     }
 
     private Integer[] getDiagonalAdjustment(int otherRow, int otherCol) {
