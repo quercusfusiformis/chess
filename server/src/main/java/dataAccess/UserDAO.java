@@ -2,12 +2,10 @@ package dataAccess;
 
 import model.UserData;
 
-import java.util.Map;
-
 public interface UserDAO {
-    boolean clear();
+    void clear();
 
-    boolean createUser(UserData user);
+    void createUser(String username, String password, String email);
 
     UserData getUser(String username);
 }

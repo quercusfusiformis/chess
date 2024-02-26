@@ -1,18 +1,16 @@
 package dataAccess;
 
-import chess.ChessGame;
+import java.util.Collection;
 import model.GameData;
 
-import java.util.Collection;
-
 public interface GameDAO {
-    boolean clear();
+    void clear();
 
-    int createGame(String game);
+    int createGame(String gameName);
 
     GameData getGame(int gameID);
 
     Collection<GameData> listGames();
 
-    boolean updateGame(int gameID, String game);
+    void updateGame(int gameID, String game);
 }
