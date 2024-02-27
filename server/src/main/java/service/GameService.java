@@ -1,7 +1,6 @@
 package service;
 
 import java.util.ArrayList;
-
 import dataAccess.*;
 import model.GameData;
 import requestRecords.CreateGameRequest;
@@ -40,12 +39,17 @@ public class GameService {
 
     public void joinGame(JoinGameRequest jgRequest, String authToken) throws DataAccessException {
         if (authDAO.authExists(authToken)) {
+            String username = authDAO.getUsername(authToken);
             if (gameDAO.gameExists(jgRequest.gameID())) {
                 if (!(jgRequest.playerColor() == null)) {
                     try {
-
+                        gameDAO.joinGameAsPlayer(jgRequest.gameID(), username, jgRequest.playerColor());
+                    }
+                    catch (IllegalArgumentException ex) {
+                        throw new DataAccessException("bad request");
                     }
                 }
+                // If playerColor is null, you do nothing for phase 3? Specs don't give a place to store observers
             }
             else {
                 throw new DataAccessException("bad request");

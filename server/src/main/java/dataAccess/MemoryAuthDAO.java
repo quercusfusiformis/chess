@@ -24,6 +24,17 @@ public class MemoryAuthDAO implements AuthDAO {
     }
 
     @Override
+    public String getUsername(String authToken) throws IllegalArgumentException {
+        try {
+            AuthData auth = getAuth(authToken);
+            return auth.username();
+        }
+        catch (Exception ex) {
+            throw new IllegalArgumentException("unauthorized");
+        }
+    }
+
+    @Override
     public boolean authExists(String authToken) {
         return getAuth(authToken) != null;
     }

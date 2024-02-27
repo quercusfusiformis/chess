@@ -1,7 +1,5 @@
 package model;
 
-import chess.ChessGame;
-
 public record GameData(int gameID, String whiteUsername, String blackUsername, String gameName, String game) {
     public boolean isColorAvailable(String requestedColor) {
         if (requestedColor.equals("WHITE")) {
@@ -10,6 +8,6 @@ public record GameData(int gameID, String whiteUsername, String blackUsername, S
         else if (requestedColor.equals("BLACK")) {
             return (this.blackUsername == null);
         }
-        else { throw new IllegalArgumentException("invalid color argument"); }
+        else { throw new IllegalArgumentException("invalid color parameter"); }
     }
 }

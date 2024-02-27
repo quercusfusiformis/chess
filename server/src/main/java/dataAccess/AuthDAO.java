@@ -9,6 +9,8 @@ public interface AuthDAO {
 
     AuthData getAuth(String authToken);
 
+    String getUsername(String authToken) throws IllegalArgumentException;
+
     boolean authExists(String authToken);
 
     void deleteAuth(String authToken);

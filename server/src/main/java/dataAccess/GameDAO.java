@@ -14,7 +14,11 @@ public interface GameDAO {
 
     Collection<GameData> listGames();
 
-    void updateGame(int gameID, String game);
+    void updateGame(int gameID, String game) throws DataAccessException;
 
-    boolean colorFreeInGame(String color, int gameID);
+    void updatePlayerInGame(int gameID, String username, String color) throws IllegalArgumentException, DataAccessException;
+
+    boolean colorFreeInGame(String color, int gameID) throws DataAccessException;
+
+    void joinGameAsPlayer(int gameID, String username, String color) throws DataAccessException;
 }

@@ -67,7 +67,12 @@ public class GameHandler extends ServiceHandler {
         }
         catch (DataAccessException ex) {
             body = new Gson().toJson(new ServerResponse(ex.getMessage()));
-            this.response.status(401);
+            switch (ex.getMessage()) {
+                case "bad request" -> this.response.status(400);
+                case "unauthorized" -> this.response.status(401);
+                case "already taken" -> this.response.status(403);
+                default -> this.response.status(418);
+            }
         }
         catch (Exception ex) {
             body = new Gson().toJson(new ServerResponse(ex.getMessage()));
