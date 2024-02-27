@@ -30,7 +30,7 @@ public class MemoryAuthDAO implements AuthDAO {
             return auth.username();
         }
         catch (Exception ex) {
-            throw new IllegalArgumentException("unauthorized");
+            throw new IllegalArgumentException("Error: unauthorized");
         }
     }
 

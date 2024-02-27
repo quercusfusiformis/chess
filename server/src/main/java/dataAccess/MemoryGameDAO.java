@@ -36,7 +36,7 @@ public class MemoryGameDAO implements GameDAO {
     @Override
     public void updateGame(int gameID, String game) throws DataAccessException {
         GameData toUpdate = dbManager.getGame("gameID", new GameData(gameID, null, null, null, null));
-        if (toUpdate == null) { throw new DataAccessException("bad request"); }
+        if (toUpdate == null) { throw new DataAccessException("Error: bad request"); }
         else {
             dbManager.delGame("all", toUpdate);
             dbManager.addGame(toUpdate.gameID(), toUpdate.whiteUsername(), toUpdate.blackUsername(), toUpdate.gameName(), game);
@@ -46,7 +46,7 @@ public class MemoryGameDAO implements GameDAO {
     @Override
     public void updatePlayerInGame(int gameID, String username, String color) throws IllegalArgumentException, DataAccessException {
         GameData toUpdate = dbManager.getGame("gameID", new GameData(gameID, null, null, null, null));
-        if (toUpdate == null) { throw new DataAccessException("bad request"); }
+        if (toUpdate == null) { throw new DataAccessException("Error: bad request"); }
         else {
             dbManager.delGame("all", toUpdate);
             if (color.equals("WHITE")) {
@@ -54,7 +54,7 @@ public class MemoryGameDAO implements GameDAO {
             } else if (color.equals("BLACK")) {
                 dbManager.addGame(toUpdate.gameID(), toUpdate.whiteUsername(), username, toUpdate.gameName(), toUpdate.game());
             } else {
-                throw new IllegalArgumentException("invalid color parameter");
+                throw new IllegalArgumentException("Error: invalid color parameter");
             }
         }
     }
@@ -66,7 +66,7 @@ public class MemoryGameDAO implements GameDAO {
             return gameToCheck.isColorAvailable(color);
         }
         else {
-            throw new DataAccessException("bad request");
+            throw new DataAccessException("Error: bad request");
         }
     }
 
@@ -77,13 +77,13 @@ public class MemoryGameDAO implements GameDAO {
             colorFree = colorFreeInGame(color, gameID);
         }
         catch (IllegalArgumentException ex) {
-            throw new DataAccessException("bad request");
+            throw new DataAccessException("Error: bad request");
         }
         if (colorFree) {
             updatePlayerInGame(gameID, username, color);
         }
         else {
-            throw new DataAccessException("already taken");
+            throw new DataAccessException("Error: already taken");
         }
     }
 }

@@ -8,6 +8,6 @@ public record GameData(int gameID, String whiteUsername, String blackUsername, S
         else if (requestedColor.equals("BLACK")) {
             return (this.blackUsername == null);
         }
-        else { throw new IllegalArgumentException("invalid color parameter"); }
+        else { throw new IllegalArgumentException("Error: invalid color parameter"); }
     }
 }

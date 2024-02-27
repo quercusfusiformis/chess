@@ -25,7 +25,11 @@ public class AuthorizationHandler extends ServiceHandler {
         }
         catch (DataAccessException ex) {
             body = new Gson().toJson(new ServerResponse(ex.getMessage()));
-            this.response.status(403);
+            switch (ex.getMessage()) {
+                case "Error: bad request" -> this.response.status(400);
+                case "Error: already taken" -> this.response.status(403);
+                default -> this.response.status(418);
+            }
         }
         catch (Exception ex) {
             body = new Gson().toJson(new ServerResponse(ex.getMessage()));
@@ -57,7 +61,7 @@ public class AuthorizationHandler extends ServiceHandler {
 
     public Object logout() {
         String body;
-        String authToken = this.request.headers().toString();
+        String authToken = this.request.headers("authorization");
         try {
             this.service.logout(authToken);
             body = new Gson().toJson(new ServerResponse(""));

@@ -24,7 +24,7 @@ public class GameService {
             return new ListGamesResponse(formattedGames);
         }
         else {
-            throw new DataAccessException("unauthorized");
+            throw new DataAccessException("Error: unauthorized");
         }
     }
 
@@ -33,7 +33,7 @@ public class GameService {
             return new CreateGameResponse(gameDAO.createGame(cgRequest.gameName()));
         }
         else {
-            throw new DataAccessException("unauthorized");
+            throw new DataAccessException("Error: unauthorized");
         }
     }
 
@@ -46,17 +46,17 @@ public class GameService {
                         gameDAO.joinGameAsPlayer(jgRequest.gameID(), username, jgRequest.playerColor());
                     }
                     catch (IllegalArgumentException ex) {
-                        throw new DataAccessException("bad request");
+                        throw new DataAccessException("Error: bad request");
                     }
                 }
                 // If playerColor is null, you do nothing for phase 3? Specs don't give a place to store observers
             }
             else {
-                throw new DataAccessException("bad request");
+                throw new DataAccessException("Error: bad request");
             }
         }
         else {
-            throw new DataAccessException("unauthorized");
+            throw new DataAccessException("Error: unauthorized");
         }
     }
 }

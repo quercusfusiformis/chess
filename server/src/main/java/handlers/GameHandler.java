@@ -17,7 +17,7 @@ public class GameHandler extends ServiceHandler {
 
     public Object listGames() {
         String body;
-        String authToken = this.request.headers().toString();
+        String authToken = this.request.headers("authorization");
         try {
             ListGamesResponse lgResponse = this.service.listGames(authToken);
             body = new Gson().toJson(lgResponse);
@@ -37,7 +37,7 @@ public class GameHandler extends ServiceHandler {
 
     public Object createGame() {
         String body;
-        String authToken = this.request.headers().toString();
+        String authToken = this.request.headers("authorization");
         CreateGameRequest cgRequest = getBody(this.request, CreateGameRequest.class);
         try {
             CreateGameResponse cgResponse = this.service.createGame(cgRequest, authToken);
@@ -58,7 +58,7 @@ public class GameHandler extends ServiceHandler {
 
     public Object joinGame() {
         String body;
-        String authToken = this.request.headers().toString();
+        String authToken = this.request.headers("authorization");
         JoinGameRequest jgRequest = getBody(this.request, JoinGameRequest.class);
         try {
             this.service.joinGame(jgRequest, authToken);
@@ -68,9 +68,9 @@ public class GameHandler extends ServiceHandler {
         catch (DataAccessException ex) {
             body = new Gson().toJson(new ServerResponse(ex.getMessage()));
             switch (ex.getMessage()) {
-                case "bad request" -> this.response.status(400);
-                case "unauthorized" -> this.response.status(401);
-                case "already taken" -> this.response.status(403);
+                case "Error: bad request" -> this.response.status(400);
+                case "Error: unauthorized" -> this.response.status(401);
+                case "Error: already taken" -> this.response.status(403);
                 default -> this.response.status(418);
             }
         }

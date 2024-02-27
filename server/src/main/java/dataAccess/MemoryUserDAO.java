@@ -11,8 +11,13 @@ public class MemoryUserDAO implements UserDAO {
     }
 
     @Override
-    public void createUser(String username, String password, String email) {
-        dbManager.addUser(username, password, email);
+    public void createUser(String username, String password, String email) throws DataAccessException {
+        if (!(username == null || password == null || email == null)) {
+            dbManager.addUser(username, password, email);
+        }
+        else {
+            throw new DataAccessException("Error: bad request");
+        }
     }
 
     @Override

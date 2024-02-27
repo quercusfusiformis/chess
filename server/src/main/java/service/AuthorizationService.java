@@ -13,7 +13,7 @@ public class AuthorizationService {
 
     public RegisterResponse register(RegisterRequest rRequest) throws DataAccessException {
         if (userDAO.userExists(rRequest.username())) {
-            throw new DataAccessException("already taken");
+            throw new DataAccessException("Error: already taken");
         }
         else {
             userDAO.createUser(rRequest.username(), rRequest.password(), rRequest.email());
@@ -29,11 +29,11 @@ public class AuthorizationService {
                 return new LoginResponse(lRequest.username(), newAuthToken);
             }
             else {
-                throw new DataAccessException("unauthorized");
+                throw new DataAccessException("Error: unauthorized");
             }
         }
         else {
-            throw new DataAccessException("unauthorized");
+            throw new DataAccessException("Error: unauthorized");
         }
     }
 
@@ -42,7 +42,7 @@ public class AuthorizationService {
             authDAO.deleteAuth(authToken);
         }
         else {
-            throw new DataAccessException("unauthorized");
+            throw new DataAccessException("Error: unauthorized");
         }
     }
 }
