@@ -10,8 +10,8 @@ public class DatabaseOperationsService {
     private UserDAO userDAO = new MemoryUserDAO();
 
     public void clear() {
-        authDAO.clear();
-        gameDAO.clear();
-        userDAO.clear();
+        this.authDAO.clear();
+        this.gameDAO.clear();
+        this.userDAO.clear();
     }
 }

@@ -19,8 +19,13 @@ public class MemoryAuthDAO implements AuthDAO {
     }
 
     @Override
-    public AuthData authenticate(String authToken) {
+    public AuthData getAuth(String authToken) {
         return dbManager.getAuth("authToken", new AuthData(authToken, null));
+    }
+
+    @Override
+    public boolean authExists(String authToken) {
+        return getAuth(authToken) != null;
     }
 
     @Override

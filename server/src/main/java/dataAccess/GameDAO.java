@@ -10,6 +10,8 @@ public interface GameDAO {
 
     GameData getGame(int gameID);
 
+    boolean gameExists(int gameID);
+
     Collection<GameData> listGames();
 
     void updateGame(int gameID, String game);

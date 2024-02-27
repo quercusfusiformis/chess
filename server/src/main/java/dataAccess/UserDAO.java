@@ -8,4 +8,8 @@ public interface UserDAO {
     void createUser(String username, String password, String email);
 
     UserData getUser(String username);
+
+    boolean userExists(String username);
+
+    boolean userPasswordMatches(String testUsername, String password);
 }

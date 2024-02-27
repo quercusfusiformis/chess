@@ -24,6 +24,11 @@ public class MemoryGameDAO implements GameDAO {
     }
 
     @Override
+    public boolean gameExists(int gameID) {
+        return getGame(gameID) != null;
+    }
+
+    @Override
     public Collection<GameData> listGames() {
         return dbManager.getAllGames();
     }

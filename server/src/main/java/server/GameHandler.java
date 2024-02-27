@@ -1,11 +1,14 @@
 package server;
 
 import com.google.gson.Gson;
+import service.GameService;
 import spark.*;
 import requestRecords.CreateGameRequest;
 import requestRecords.JoinGameRequest;
 
 public class GameHandler extends ServiceHandler {
+    private GameService service = new GameService();
+
     public GameHandler(Request request, Response response) { super(request, response); }
 
     public Object listGames() {
