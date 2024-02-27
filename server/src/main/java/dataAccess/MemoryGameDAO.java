@@ -39,4 +39,10 @@ public class MemoryGameDAO implements GameDAO {
         dbManager.delGame("all", toUpdate);
         dbManager.addGame(toUpdate.gameID(), toUpdate.whiteUsername(), toUpdate.blackUsername(), toUpdate.gameName(), game);
     }
+
+    @Override
+    public boolean colorFreeInGame(String color, int gameID) {
+        GameData gameToCheck = getGame(gameID);
+        return gameToCheck.isColorAvailable(color);
+    }
 }

@@ -1,5 +1,8 @@
 package server;
 
+import handlers.AuthorizationHandler;
+import handlers.DatabaseOperationsHandler;
+import handlers.GameHandler;
 import spark.*;
 
 public class Server {

@@ -1,4 +1,4 @@
-package server;
+package handlers;
 
 import com.google.gson.Gson;
 import spark.*;
@@ -10,7 +10,7 @@ import responseRecords.RegisterResponse;
 import responseRecords.ServerResponse;
 import dataAccess.DataAccessException;
 
-public class AuthorizationHandler extends  ServiceHandler {
+public class AuthorizationHandler extends ServiceHandler {
     private AuthorizationService service = new AuthorizationService();
 
     public AuthorizationHandler(Request request, Response response) { super(request, response); }

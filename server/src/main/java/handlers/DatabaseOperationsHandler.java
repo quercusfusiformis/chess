@@ -1,6 +1,7 @@
-package server;
+package handlers;
 
 import com.google.gson.Gson;
+import handlers.ServiceHandler;
 import spark.*;
 import service.DatabaseOperationsService;
 import responseRecords.ServerResponse;

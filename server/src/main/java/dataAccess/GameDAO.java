@@ -15,4 +15,6 @@ public interface GameDAO {
     Collection<GameData> listGames();
 
     void updateGame(int gameID, String game);
+
+    boolean colorFreeInGame(String color, int gameID);
 }
