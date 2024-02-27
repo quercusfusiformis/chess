@@ -18,7 +18,7 @@ public class DatabaseOperationsHandler extends ServiceHandler {
             this.response.status(200);
         }
         catch (Exception ex) {
-            body = new Gson().toJson(ex);
+            body = new Gson().toJson(new ServerResponse(ex.getMessage()));
             this.response.status(500);
         }
         this.response.type("application/json");

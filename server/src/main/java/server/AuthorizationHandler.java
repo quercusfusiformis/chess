@@ -24,11 +24,11 @@ public class AuthorizationHandler extends  ServiceHandler {
             this.response.status(200);
         }
         catch (DataAccessException ex) {
-            body = new Gson().toJson(ex);
+            body = new Gson().toJson(new ServerResponse(ex.getMessage()));
             this.response.status(403);
         }
         catch (Exception ex) {
-            body = new Gson().toJson(ex);
+            body = new Gson().toJson(new ServerResponse(ex.getMessage()));
             this.response.status(500);
         }
         this.response.type("application/json");
@@ -44,11 +44,11 @@ public class AuthorizationHandler extends  ServiceHandler {
             this.response.status(200);
         }
         catch (DataAccessException ex) {
-            body = new Gson().toJson(ex);
+            body = new Gson().toJson(new ServerResponse(ex.getMessage()));
             this.response.status(401);
         }
         catch (Exception ex) {
-            body = new Gson().toJson(ex);
+            body = new Gson().toJson(new ServerResponse(ex.getMessage()));
             this.response.status(500);
         }
         this.response.type("application/json");
@@ -64,11 +64,11 @@ public class AuthorizationHandler extends  ServiceHandler {
             this.response.status(200);
         }
         catch (DataAccessException ex) {
-            body = new Gson().toJson(ex);
+            body = new Gson().toJson(new ServerResponse(ex.getMessage()));
             this.response.status(401);
         }
         catch (Exception ex) {
-            body = new Gson().toJson(ex);
+            body = new Gson().toJson(new ServerResponse(ex.getMessage()));
             this.response.status(500);
         }
         this.response.type("application/json");
