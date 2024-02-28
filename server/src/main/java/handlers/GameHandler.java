@@ -1,17 +1,17 @@
 package handlers;
 
 import com.google.gson.Gson;
-import responseRecords.CreateGameResponse;
 import spark.*;
-import dataAccess.DataAccessException;
-import responseRecords.ListGamesResponse;
-import responseRecords.ServerResponse;
 import service.GameService;
 import requestRecords.CreateGameRequest;
 import requestRecords.JoinGameRequest;
+import responseRecords.ListGamesResponse;
+import responseRecords.CreateGameResponse;
+import responseRecords.ServerResponse;
+import dataAccess.DataAccessException;
 
 public class GameHandler extends ServiceHandler {
-    private GameService service = new GameService();
+    private final GameService service = new GameService();
 
     public GameHandler(Request request, Response response) { super(request, response); }
 
@@ -22,12 +22,10 @@ public class GameHandler extends ServiceHandler {
             ListGamesResponse lgResponse = this.service.listGames(authToken);
             body = new Gson().toJson(lgResponse);
             this.response.status(200);
-        }
-        catch (DataAccessException ex) {
+        } catch (DataAccessException ex) {
             body = new Gson().toJson(new ServerResponse(ex.getMessage()));
             this.response.status(401);
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             body = new Gson().toJson(new ServerResponse(ex.getMessage()));
             this.response.status(500);
         }
@@ -43,12 +41,10 @@ public class GameHandler extends ServiceHandler {
             CreateGameResponse cgResponse = this.service.createGame(cgRequest, authToken);
             body = new Gson().toJson(cgResponse);
             this.response.status(200);
-        }
-        catch (DataAccessException ex) {
+        } catch (DataAccessException ex) {
             body = new Gson().toJson(new ServerResponse(ex.getMessage()));
             this.response.status(401);
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             body = new Gson().toJson(new ServerResponse(ex.getMessage()));
             this.response.status(500);
         }
@@ -64,8 +60,7 @@ public class GameHandler extends ServiceHandler {
             this.service.joinGame(jgRequest, authToken);
             body = new Gson().toJson(new ServerResponse(""));
             this.response.status(200);
-        }
-        catch (DataAccessException ex) {
+        } catch (DataAccessException ex) {
             body = new Gson().toJson(new ServerResponse(ex.getMessage()));
             switch (ex.getMessage()) {
                 case "Error: bad request" -> this.response.status(400);
@@ -73,8 +68,7 @@ public class GameHandler extends ServiceHandler {
                 case "Error: already taken" -> this.response.status(403);
                 default -> this.response.status(418);
             }
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             body = new Gson().toJson(new ServerResponse(ex.getMessage()));
             this.response.status(500);
         }

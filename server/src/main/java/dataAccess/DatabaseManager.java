@@ -1,17 +1,17 @@
 package dataAccess;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.ArrayList;
 import model.*;
 
 public class DatabaseManager {
     private static int nextGameID = 1000;
-    private static HashSet<AuthData> authData = new HashSet<>();
+    private static final HashSet<AuthData> authData = new HashSet<>();
 
-    private static HashSet<GameData> gameData = new HashSet<>();
+    private static final HashSet<GameData> gameData = new HashSet<>();
 
-    private static HashSet<UserData> userData = new HashSet<>();
+    private static final HashSet<UserData> userData = new HashSet<>();
 
     public int getNewGameID() {
         nextGameID = nextGameID + 1;

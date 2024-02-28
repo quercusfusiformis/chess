@@ -1,18 +1,18 @@
 package service;
 
 import java.util.ArrayList;
-import dataAccess.*;
 import model.GameData;
 import requestRecords.CreateGameRequest;
 import requestRecords.JoinGameRequest;
-import responseRecords.CreateGameResponse;
-import responseRecords.ListGameInfo;
 import responseRecords.ListGamesResponse;
+import responseRecords.ListGameInfo;
+import responseRecords.CreateGameResponse;
+import dataAccess.*;
 
 public class GameService {
-    private AuthDAO authDAO = new MemoryAuthDAO();
+    private final AuthDAO authDAO = new MemoryAuthDAO();
 
-    private GameDAO gameDAO = new MemoryGameDAO();
+    private final GameDAO gameDAO = new MemoryGameDAO();
 
     public ListGamesResponse listGames(String authToken) throws DataAccessException {
         if (authDAO.authExists(authToken)) {

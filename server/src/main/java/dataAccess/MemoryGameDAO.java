@@ -4,7 +4,7 @@ import java.util.Collection;
 import model.GameData;
 
 public class MemoryGameDAO implements GameDAO {
-    private DatabaseManager dbManager = new DatabaseManager();
+    private final DatabaseManager dbManager = new DatabaseManager();
 
     @Override
     public void clear() {

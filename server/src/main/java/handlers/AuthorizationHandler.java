@@ -11,7 +11,7 @@ import responseRecords.ServerResponse;
 import dataAccess.DataAccessException;
 
 public class AuthorizationHandler extends ServiceHandler {
-    private AuthorizationService service = new AuthorizationService();
+    private final AuthorizationService service = new AuthorizationService();
 
     public AuthorizationHandler(Request request, Response response) { super(request, response); }
 
@@ -22,16 +22,14 @@ public class AuthorizationHandler extends ServiceHandler {
             RegisterResponse rResponse = this.service.register(rRequest);
             body = new Gson().toJson(rResponse);
             this.response.status(200);
-        }
-        catch (DataAccessException ex) {
+        } catch (DataAccessException ex) {
             body = new Gson().toJson(new ServerResponse(ex.getMessage()));
             switch (ex.getMessage()) {
                 case "Error: bad request" -> this.response.status(400);
                 case "Error: already taken" -> this.response.status(403);
                 default -> this.response.status(418);
             }
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             body = new Gson().toJson(new ServerResponse(ex.getMessage()));
             this.response.status(500);
         }
@@ -46,12 +44,10 @@ public class AuthorizationHandler extends ServiceHandler {
             LoginResponse lResponse = this.service.login(lRequest);
             body = new Gson().toJson(lResponse);
             this.response.status(200);
-        }
-        catch (DataAccessException ex) {
+        } catch (DataAccessException ex) {
             body = new Gson().toJson(new ServerResponse(ex.getMessage()));
             this.response.status(401);
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             body = new Gson().toJson(new ServerResponse(ex.getMessage()));
             this.response.status(500);
         }
@@ -66,12 +62,10 @@ public class AuthorizationHandler extends ServiceHandler {
             this.service.logout(authToken);
             body = new Gson().toJson(new ServerResponse(""));
             this.response.status(200);
-        }
-        catch (DataAccessException ex) {
+        } catch (DataAccessException ex) {
             body = new Gson().toJson(new ServerResponse(ex.getMessage()));
             this.response.status(401);
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             body = new Gson().toJson(new ServerResponse(ex.getMessage()));
             this.response.status(500);
         }

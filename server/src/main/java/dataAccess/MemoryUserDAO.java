@@ -3,7 +3,7 @@ package dataAccess;
 import model.UserData;
 
 public class MemoryUserDAO implements UserDAO {
-    private DatabaseManager dbManager = new DatabaseManager();
+    private final DatabaseManager dbManager = new DatabaseManager();
 
     @Override
     public void clear() {

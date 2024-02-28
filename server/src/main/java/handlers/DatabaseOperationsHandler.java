@@ -1,13 +1,12 @@
 package handlers;
 
 import com.google.gson.Gson;
-import handlers.ServiceHandler;
 import spark.*;
 import service.DatabaseOperationsService;
 import responseRecords.ServerResponse;
 
 public class DatabaseOperationsHandler extends ServiceHandler {
-    private DatabaseOperationsService service = new DatabaseOperationsService();
+    private final DatabaseOperationsService service = new DatabaseOperationsService();
 
     public DatabaseOperationsHandler(Request request, Response response) { super(request, response); }
 
@@ -17,8 +16,7 @@ public class DatabaseOperationsHandler extends ServiceHandler {
             this.service.clear();
             body = new Gson().toJson(new ServerResponse(""));
             this.response.status(200);
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             body = new Gson().toJson(new ServerResponse(ex.getMessage()));
             this.response.status(500);
         }

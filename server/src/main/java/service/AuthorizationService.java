@@ -1,15 +1,15 @@
 package service;
 
-import dataAccess.*;
-import requestRecords.LoginRequest;
 import requestRecords.RegisterRequest;
-import responseRecords.LoginResponse;
+import requestRecords.LoginRequest;
 import responseRecords.RegisterResponse;
+import responseRecords.LoginResponse;
+import dataAccess.*;
 
 public class AuthorizationService {
-    private AuthDAO authDAO = new MemoryAuthDAO();
+    private final AuthDAO authDAO = new MemoryAuthDAO();
 
-    private UserDAO userDAO = new MemoryUserDAO();
+    private final UserDAO userDAO = new MemoryUserDAO();
 
     public RegisterResponse register(RegisterRequest rRequest) throws DataAccessException {
         if (userDAO.userExists(rRequest.username())) {
