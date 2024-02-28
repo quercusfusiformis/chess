@@ -5,7 +5,7 @@ import java.util.HashSet;
 import java.util.ArrayList;
 import model.*;
 
-public class DatabaseManager {
+public class MemoryDatabaseManager {
     private static int nextGameID = 1000;
     private static final HashSet<AuthData> authData = new HashSet<>();
 
@@ -172,14 +172,6 @@ public class DatabaseManager {
         while(!(toRemove == null)) {
             gameData.remove(toRemove);
             toRemove = getGame(field, search);
-        }
-    }
-
-    public void delUser(String field, UserData search) {
-        UserData toRemove = getUser(field, search);
-        while(!(toRemove == null)) {
-            userData.remove(toRemove);
-            toRemove = getUser(field, search);
         }
     }
 }

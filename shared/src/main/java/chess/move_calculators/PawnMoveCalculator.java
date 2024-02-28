@@ -19,7 +19,6 @@ public class PawnMoveCalculator extends PieceMoveCalculator {
         // If move takes pawn to edge of board, promotion move: move needs to be listed 4 times with all possible pieces
         //     Queen, Rook, Bishop, Knight
 
-        ArrayList<ChessMove> moves = new ArrayList<>();
         int row = this.position.getRow();
         int col = this.position.getColumn();
 
@@ -93,21 +92,20 @@ public class PawnMoveCalculator extends PieceMoveCalculator {
         if (twoInFrontAvailable) { proposedMoves.add(twoInFrontPos); }
         if (!(forwardleftOccupied)) { proposedMoves.add(forwardleftPos); }
         if (!(forwardrightOccupied)) { proposedMoves.add(forwardrightPos); }
+        return validateMoves(proposedMoves, movePieceColor, oppositeSide);
+    }
+
+    private Collection<ChessMove> validateMoves(Collection<ChessPosition> proposedMoves, ChessGame.TeamColor movePieceColor, int oppositeSide) {
+        ArrayList<ChessMove> moves = new ArrayList<>();
         for(ChessPosition pMove : proposedMoves) {
             int pRow = pMove.getRow();
-            if (movePieceColor == ChessGame.TeamColor.WHITE && pRow == oppositeSide) {
+            if ((movePieceColor == ChessGame.TeamColor.WHITE && pRow == oppositeSide)
+                    || (movePieceColor == ChessGame.TeamColor.BLACK && pRow == oppositeSide)) {
                 moves.add(new ChessMove(this.position, pMove, ChessPiece.PieceType.QUEEN));
                 moves.add(new ChessMove(this.position, pMove, ChessPiece.PieceType.BISHOP));
                 moves.add(new ChessMove(this.position, pMove, ChessPiece.PieceType.KNIGHT));
                 moves.add(new ChessMove(this.position, pMove, ChessPiece.PieceType.ROOK));
-            }
-            else if (movePieceColor == ChessGame.TeamColor.BLACK && pRow == oppositeSide) {
-                moves.add(new ChessMove(this.position, pMove, ChessPiece.PieceType.QUEEN));
-                moves.add(new ChessMove(this.position, pMove, ChessPiece.PieceType.BISHOP));
-                moves.add(new ChessMove(this.position, pMove, ChessPiece.PieceType.KNIGHT));
-                moves.add(new ChessMove(this.position, pMove, ChessPiece.PieceType.ROOK));
-            }
-            else {
+            } else {
                 moves.add(new ChessMove(this.position, pMove, null));
             }
         }

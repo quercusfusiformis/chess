@@ -4,7 +4,7 @@ import java.util.UUID;
 import model.AuthData;
 
 public class MemoryAuthDAO implements AuthDAO {
-    private final DatabaseManager dbManager = new DatabaseManager();
+    private final MemoryDatabaseManager dbManager = new MemoryDatabaseManager();
 
     @Override
     public void clear() {

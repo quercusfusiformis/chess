@@ -14,8 +14,6 @@ public interface GameDAO {
 
     Collection<GameData> listGames();
 
-    void updateGame(int gameID, String game) throws DataAccessException;
-
     void updatePlayerInGame(int gameID, String username, String color) throws IllegalArgumentException, DataAccessException;
 
     boolean colorFreeInGame(String color, int gameID) throws DataAccessException;

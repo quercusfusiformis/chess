@@ -4,7 +4,7 @@ import java.util.Collection;
 import model.GameData;
 
 public class MemoryGameDAO implements GameDAO {
-    private final DatabaseManager dbManager = new DatabaseManager();
+    private final MemoryDatabaseManager dbManager = new MemoryDatabaseManager();
 
     @Override
     public void clear() {
@@ -31,16 +31,6 @@ public class MemoryGameDAO implements GameDAO {
     @Override
     public Collection<GameData> listGames() {
         return dbManager.getAllGames();
-    }
-
-    @Override
-    public void updateGame(int gameID, String game) throws DataAccessException {
-        GameData toUpdate = dbManager.getGame("gameID", new GameData(gameID, null, null, null, null));
-        if (toUpdate == null) { throw new DataAccessException("Error: bad request"); }
-        else {
-            dbManager.delGame("all", toUpdate);
-            dbManager.addGame(toUpdate.gameID(), toUpdate.whiteUsername(), toUpdate.blackUsername(), toUpdate.gameName(), game);
-        }
     }
 
     @Override
