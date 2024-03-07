@@ -7,7 +7,7 @@ public interface AuthDAO {
 
     String createAuth(String username) throws DataAccessException;
 
-    AuthData getAuth(String authToken);
+    AuthData getAuth(String authToken) throws DataAccessException;
 
     String getUsername(String authToken) throws IllegalArgumentException;
 

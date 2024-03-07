@@ -24,14 +24,14 @@ public class SQLAuthDAO implements AuthDAO {
             statement.setString(1, newAuthToken);
             statement.setString(2, username);
             statement.executeUpdate();
-        } catch (SQLException | DataAccessException ex) {
+        } catch (SQLException ex) {
             throw new DataAccessException(ex.getMessage());
         }
         return newAuthToken;
     }
 
     @Override
-    public AuthData getAuth(String authToken) {
+    public AuthData getAuth(String authToken) throws DataAccessException {
         AuthData returnAuth = new AuthData("", "");
         try (var statement = DatabaseManager.getConnection().prepareStatement(
                 "SELECT authToken, username FROM auth WHERE authToken=?", Statement.RETURN_GENERATED_KEYS)) {
@@ -41,8 +41,8 @@ public class SQLAuthDAO implements AuthDAO {
             if (result.next()) {
                 returnAuth = new AuthData(result.getString(1), result.getString(2));
             }
-        } catch (SQLException | DataAccessException ex) {
-            throw new RuntimeException(ex.getMessage());
+        } catch (SQLException ex) {
+            throw new DataAccessException(ex.getMessage());
         }
         return returnAuth;
     }
@@ -71,7 +71,7 @@ public class SQLAuthDAO implements AuthDAO {
             statement.executeQuery();
             String result = String.valueOf(statement.getGeneratedKeys());
             if (!(result.isEmpty())) { goodAuth = true; }
-        } catch (SQLException | DataAccessException ex) {
+        } catch (SQLException ex) {
             throw new DataAccessException(ex.getMessage());
         }
         return goodAuth;
@@ -83,7 +83,7 @@ public class SQLAuthDAO implements AuthDAO {
                 "DELETE FROM auth WHERE authToken=?")) {
             statement.setString(1, authToken);
             statement.executeUpdate();
-        } catch (SQLException | DataAccessException ex) {
+        } catch (SQLException ex) {
             throw new DataAccessException(ex.getMessage());
         }
     }
