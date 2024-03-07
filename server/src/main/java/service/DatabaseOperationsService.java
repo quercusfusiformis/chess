@@ -9,7 +9,7 @@ public class DatabaseOperationsService {
 
     private final UserDAO userDAO = new MemoryUserDAO();
 
-    public void clear() {
+    public void clear() throws DataAccessException {
         this.authDAO.clear();
         this.gameDAO.clear();
         this.userDAO.clear();

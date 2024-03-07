@@ -4,7 +4,7 @@ import model.GameData;
 
 import java.util.Collection;
 
-public class sqlGameDAO implements GameDAO {
+public class SQLGameDAO implements GameDAO {
     @Override
     public void clear() {
 

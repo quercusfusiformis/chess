@@ -25,6 +25,8 @@ public class DatabaseManager {
                 var host = props.getProperty("db.host");
                 var port = Integer.parseInt(props.getProperty("db.port"));
                 connectionUrl = String.format("jdbc:mysql://%s:%d", host, port);
+
+                createDatabase();
             }
         } catch (Exception ex) {
             throw new RuntimeException("unable to process db.properties. " + ex.getMessage());
@@ -34,12 +36,47 @@ public class DatabaseManager {
     /**
      * Creates the database if it does not already exist.
      */
-    static void createDatabase() throws DataAccessException {
+    public static void createDatabase() throws DataAccessException {
         try {
             var statement = "CREATE DATABASE IF NOT EXISTS " + databaseName;
             var conn = DriverManager.getConnection(connectionUrl, user, password);
             try (var preparedStatement = conn.prepareStatement(statement)) {
                 preparedStatement.executeUpdate();
+            }
+            conn.setCatalog(databaseName);
+
+            String createAuthTable = """
+                    CREATE TABLE IF NOT EXISTS auth (
+                        authToken VARCHAR(255) NOT NULL,
+                        username VARCHAR(255) NOT NULL,
+                        PRIMARY KEY (authToken)
+                    )""";
+            try (var createStatement = conn.prepareStatement(createAuthTable)) {
+                createStatement.executeUpdate();
+            }
+
+            String createGameTable = """
+                    CREATE TABLE IF NOT EXISTS game (
+                        gameID INT NOT NULL AUTO_INCREMENT,
+                        whiteUsername VARCHAR(255) NOT NULL,
+                        blackUsername VARCHAR(255) NOT NULL,
+                        gameName VARCHAR(255) NOT NULL,
+                        game VARCHAR(255) NOT NULL,
+                        PRIMARY KEY (gameID)
+                    )""";
+            try (var createStatement = conn.prepareStatement(createGameTable)) {
+                createStatement.executeUpdate();
+            }
+
+            String createUserTable = """
+                    CREATE TABLE IF NOT EXISTS user (
+                        username VARCHAR(255) NOT NULL,
+                        password VARCHAR(255) NOT NULL,
+                        email VARCHAR(255) NOT NULL,
+                        PRIMARY KEY (username)
+                    )""";
+            try (var createStatement = conn.prepareStatement(createUserTable)) {
+                createStatement.executeUpdate();
             }
         } catch (SQLException e) {
             throw new DataAccessException(e.getMessage());

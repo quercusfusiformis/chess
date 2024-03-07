@@ -38,7 +38,7 @@ class AuthorizationServiceTests {
     }
 
     @AfterEach
-    void tearDown() {
+    void tearDown() throws DataAccessException {
         this.doService.clear();
     }
 

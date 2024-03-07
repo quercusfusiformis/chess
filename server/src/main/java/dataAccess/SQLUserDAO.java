@@ -2,7 +2,7 @@ package dataAccess;
 
 import model.UserData;
 
-public class sqlUserDAO implements UserDAO {
+public class SQLUserDAO implements UserDAO {
     @Override
     public void clear() {
 
