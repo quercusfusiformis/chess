@@ -7,9 +7,9 @@ import responseRecords.LoginResponse;
 import dataAccess.*;
 
 public class AuthorizationService {
-    private final AuthDAO authDAO = new MemoryAuthDAO();
+    private final AuthDAO authDAO = new SQLAuthDAO();
 
-    private final UserDAO userDAO = new MemoryUserDAO();
+    private final UserDAO userDAO = new SQLUserDAO();
 
     public RegisterResponse register(RegisterRequest rRequest) throws DataAccessException {
         if (userDAO.userExists(rRequest.username())) {

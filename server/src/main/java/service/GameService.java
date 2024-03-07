@@ -10,9 +10,9 @@ import responseRecords.CreateGameResponse;
 import dataAccess.*;
 
 public class GameService {
-    private final AuthDAO authDAO = new MemoryAuthDAO();
+    private final AuthDAO authDAO = new SQLAuthDAO();
 
-    private final GameDAO gameDAO = new MemoryGameDAO();
+    private final GameDAO gameDAO = new SQLGameDAO();
 
     public ListGamesResponse listGames(String authToken) throws DataAccessException {
         if (authDAO.authExists(authToken)) {
