@@ -1,9 +1,8 @@
 package dataAccess;
 
-import model.UserData;
-
+import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
+import model.UserData;
 
 public class SQLUserDAO implements UserDAO {
     @Override
@@ -35,14 +34,20 @@ public class SQLUserDAO implements UserDAO {
 
     @Override
     public UserData getUser(String username) throws DataAccessException {
-        UserData returnUser = new UserData("", "", "");
+        UserData returnUser = null;
         try (var statement = DatabaseManager.getConnection().prepareStatement(
-                "SELECT username, password, email FROM user WHERE username=?", Statement.RETURN_GENERATED_KEYS)) {
+                "SELECT username, password, email FROM user WHERE username=?",
+                ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY)) {
             statement.setString(1, username);
-            statement.executeQuery();
-            var result = statement.getGeneratedKeys();
-            if (result.next()) {
-                returnUser = new UserData(result.getString(1), result.getString(2), result.getString(3));
+            var result = statement.executeQuery();
+            int rowcount = 0;
+            if (result.last()) { rowcount = result.getRow(); }
+            if (rowcount == 1) {
+                returnUser = new UserData(result.getString(1),
+                        result.getString(2), result.getString(3));
+            }
+            else if (rowcount > 1) {
+                throw new DataAccessException("Error: More than one row matching username in database");
             }
         } catch (SQLException ex) {
             throw new DataAccessException(ex.getMessage());
@@ -54,11 +59,18 @@ public class SQLUserDAO implements UserDAO {
     public boolean userExists(String username) throws DataAccessException {
         boolean goodUser = false;
         try (var statement = DatabaseManager.getConnection().prepareStatement(
-                "SELECT username FROM user WHERE username=?", Statement.RETURN_GENERATED_KEYS)) {
+                "SELECT username FROM user WHERE username=?",
+                ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY)) {
             statement.setString(1, username);
-            statement.executeQuery();
-            String result = String.valueOf(statement.getGeneratedKeys());
-            if (!(result.isEmpty())) { goodUser = true; }
+            var result = statement.executeQuery();
+            int rowcount = 0;
+            if (result.last()) { rowcount = result.getRow(); }
+            if (rowcount == 1) {
+                goodUser = true;
+            }
+            else if (rowcount > 1) {
+                throw new DataAccessException("Error: More than one row matching username in database");
+            }
         } catch (SQLException ex) {
             throw new DataAccessException(ex.getMessage());
         }
@@ -67,15 +79,24 @@ public class SQLUserDAO implements UserDAO {
 
     @Override
     public boolean userPasswordMatches(String testUsername, String password) throws DataAccessException {
+        String testPassword = null;
         try (var statement = DatabaseManager.getConnection().prepareStatement(
-                "SELECT username FROM user WHERE username=?", Statement.RETURN_GENERATED_KEYS)) {
+                "SELECT username FROM user WHERE username=?",
+                ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY)) {
             statement.setString(1, testUsername);
-            statement.executeQuery();
-            String result = String.valueOf(statement.getGeneratedKeys());
-            if (!(result.isEmpty())) { return false; }
-            else { return result.equals(password); }
+            var result = statement.executeQuery();
+            int rowcount = 0;
+            if (result.last()) { rowcount = result.getRow(); }
+            if (rowcount == 1) {
+                testPassword = result.getString(1);
+            }
+            else if (rowcount > 1) {
+                throw new DataAccessException("Error: More than one row matching username in database");
+            }
         } catch (SQLException ex) {
             throw new DataAccessException(ex.getMessage());
         }
+        if (!(testPassword == null)) { return testPassword.equals(password); }
+        else { return false; }
     }
 }

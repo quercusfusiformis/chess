@@ -1,7 +1,7 @@
 package dataAccess;
 
 import java.sql.*;
-import java.util.Properties;
+import java.util.*;
 
 public class DatabaseManager {
     private static final String databaseName;
@@ -95,7 +95,7 @@ public class DatabaseManager {
      * }
      * </code>
      */
-    static Connection getConnection() throws DataAccessException {
+    public static Connection getConnection() throws DataAccessException {
         try {
             var conn = DriverManager.getConnection(connectionUrl, user, password);
             conn.setCatalog(databaseName);
@@ -103,5 +103,24 @@ public class DatabaseManager {
         } catch (SQLException e) {
             throw new DataAccessException(e.getMessage());
         }
+    }
+
+    public static int getNumRows(String dbName) throws DataAccessException {
+        String sqlStatement;
+        switch (dbName) {
+            case "auth" -> sqlStatement = "SELECT COUNT(*) FROM auth";
+            case "game" -> sqlStatement = "SELECT COUNT(*) FROM game";
+            case "user" -> sqlStatement = "SELECT COUNT(*) FROM user";
+            default -> throw new DataAccessException("Invalid database requested.");
+        }
+        int numRows = 0;
+        try (var statement = DatabaseManager.getConnection().prepareStatement(
+                sqlStatement, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY)) {
+            var result = statement.executeQuery();
+            if (result.next()) { numRows = result.getInt(1); }
+        } catch (SQLException ex) {
+            throw new DataAccessException(ex.getMessage());
+        }
+        return numRows;
     }
 }

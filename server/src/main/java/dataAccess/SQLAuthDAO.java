@@ -1,10 +1,9 @@
 package dataAccess;
 
-import model.AuthData;
-
-import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.UUID;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import model.AuthData;
 
 public class SQLAuthDAO implements AuthDAO {
     @Override
@@ -32,14 +31,19 @@ public class SQLAuthDAO implements AuthDAO {
 
     @Override
     public AuthData getAuth(String authToken) throws DataAccessException {
-        AuthData returnAuth = new AuthData("", "");
+        AuthData returnAuth = null;
         try (var statement = DatabaseManager.getConnection().prepareStatement(
-                "SELECT authToken, username FROM auth WHERE authToken=?", Statement.RETURN_GENERATED_KEYS)) {
+                "SELECT authToken, username FROM auth WHERE authToken=?",
+                ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY)) {
             statement.setString(1, authToken);
-            statement.executeQuery();
-            var result = statement.getGeneratedKeys();
-            if (result.next()) {
+            var result = statement.executeQuery();
+            int rowcount = 0;
+            if (result.last()) { rowcount = result.getRow(); }
+            if (rowcount == 1) {
                 returnAuth = new AuthData(result.getString(1), result.getString(2));
+            }
+            else if (rowcount > 1) {
+                throw new DataAccessException("Error: More than one row matching authToken in database");
             }
         } catch (SQLException ex) {
             throw new DataAccessException(ex.getMessage());
@@ -49,13 +53,21 @@ public class SQLAuthDAO implements AuthDAO {
 
     @Override
     public String getUsername(String authToken) throws IllegalArgumentException {
-        String username = "";
+        String username = null;
         try (var statement = DatabaseManager.getConnection().prepareStatement(
-                "SELECT username FROM auth WHERE authToken=?", Statement.RETURN_GENERATED_KEYS)) {
+                "SELECT username FROM auth WHERE authToken=?",
+                ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY)) {
             statement.setString(1, authToken);
-            statement.executeQuery();
-            var result = statement.getGeneratedKeys();
-            if (result.next()) { username = result.getString(1); }
+            var result = statement.executeQuery();
+            int rowcount = 0;
+            if (result.last()) { rowcount = result.getRow(); }
+            if (rowcount == 1) {
+                username = result.getString(1);
+            }
+            else if (rowcount > 1) {
+                throw new DataAccessException("Error: More than one row matching authToken in database");
+            }
+//            if (result.next()) { username = result.getString(1); }
         } catch (SQLException | DataAccessException ex) {
             throw new IllegalArgumentException(ex.getMessage());
         }
@@ -66,11 +78,18 @@ public class SQLAuthDAO implements AuthDAO {
     public boolean authExists(String authToken) throws DataAccessException {
         boolean goodAuth = false;
         try (var statement = DatabaseManager.getConnection().prepareStatement(
-                "SELECT username FROM auth WHERE authToken=?", Statement.RETURN_GENERATED_KEYS)) {
+                "SELECT username FROM auth WHERE authToken=?",
+                ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY)) {
             statement.setString(1, authToken);
-            statement.executeQuery();
-            String result = String.valueOf(statement.getGeneratedKeys());
-            if (!(result.isEmpty())) { goodAuth = true; }
+            var result = statement.executeQuery();
+            int rowcount = 0;
+            if (result.last()) { rowcount = result.getRow(); }
+            if (rowcount == 1) {
+                goodAuth = true;
+            }
+            else if (rowcount > 1) {
+                throw new DataAccessException("Error: More than one row matching authToken in database");
+            }
         } catch (SQLException ex) {
             throw new DataAccessException(ex.getMessage());
         }
