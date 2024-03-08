@@ -58,10 +58,10 @@ public class DatabaseManager {
             String createGameTable = """
                     CREATE TABLE IF NOT EXISTS game (
                         gameID INT NOT NULL AUTO_INCREMENT,
-                        whiteUsername VARCHAR(255) NOT NULL,
-                        blackUsername VARCHAR(255) NOT NULL,
+                        whiteUsername VARCHAR(255) DEFAULT NULL,
+                        blackUsername VARCHAR(255) DEFAULT NULL,
                         gameName VARCHAR(255) NOT NULL,
-                        game VARCHAR(255) NOT NULL,
+                        game JSON NOT NULL,
                         PRIMARY KEY (gameID)
                     )""";
             try (var createStatement = conn.prepareStatement(createGameTable)) {

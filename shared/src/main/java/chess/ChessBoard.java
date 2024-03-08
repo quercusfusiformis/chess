@@ -36,6 +36,10 @@ public class ChessBoard {
         return this.board[position.getRow() - 1][position.getColumn() - 1];
     }
 
+    public ChessPiece[][] getBoard() {
+        return this.board;
+    }
+
     /**
      * Sets the board to the default starting board
      * (How the game of chess normally starts)

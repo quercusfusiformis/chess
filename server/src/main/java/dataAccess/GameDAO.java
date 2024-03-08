@@ -4,15 +4,15 @@ import java.util.Collection;
 import model.GameData;
 
 public interface GameDAO {
-    void clear();
+    void clear() throws DataAccessException;
 
-    int createGame(String gameName);
+    int createGame(String gameName) throws DataAccessException;
 
-    GameData getGame(int gameID);
+    GameData getGame(int gameID) throws DataAccessException;
 
-    boolean gameExists(int gameID);
+    boolean gameExists(int gameID) throws DataAccessException;
 
-    Collection<GameData> listGames();
+    Collection<GameData> listGames() throws DataAccessException;
 
     void updatePlayerInGame(int gameID, String username, String color) throws IllegalArgumentException, DataAccessException;
 
