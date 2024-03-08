@@ -47,6 +47,8 @@ class SQLUserDAOTests {
     @Order(3)
     @DisplayName("createUser (-)")
     void createUser_negative() {
+        DataAccessException exception = assertThrows(DataAccessException.class, () -> userDAO.createUser("parletscimpernel", null, "no"));
+        assertEquals("Error: bad request", exception.getMessage());
     }
 
     @Test
@@ -60,6 +62,8 @@ class SQLUserDAOTests {
     @Order(5)
     @DisplayName("getUser (-)")
     void getUser_negative() {
+        DataAccessException exception = assertThrows(DataAccessException.class, () -> userDAO.getUser("diego"));
+        assertEquals("Error: user not registered", exception.getMessage());
     }
 
     @Test
@@ -71,7 +75,8 @@ class SQLUserDAOTests {
     @Test
     @Order(7)
     @DisplayName("userExists (-)")
-    void userExists_negative() {
+    void userExists_negative() throws DataAccessException {
+        assertFalse(userDAO.userExists("vikram"));
     }
 
     @Test
@@ -84,6 +89,7 @@ class SQLUserDAOTests {
     @Test
     @Order(9)
     @DisplayName("userPasswordMatches (-)")
-    void userPasswordMatches_negative() {
+    void userPasswordMatches_negative() throws DataAccessException {
+        assertFalse(userDAO.userPasswordMatches("conner", "nomatch"));
     }
 }

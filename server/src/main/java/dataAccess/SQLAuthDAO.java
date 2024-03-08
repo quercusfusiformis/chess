@@ -39,7 +39,8 @@ public class SQLAuthDAO implements AuthDAO {
             var result = statement.executeQuery();
             int rowcount = 0;
             if (result.last()) { rowcount = result.getRow(); }
-            if (rowcount == 1) {
+            if (rowcount == 0 ) { throw new DataAccessException("Error: unauthorized"); }
+            else if (rowcount == 1) {
                 returnAuth = new AuthData(result.getString(1), result.getString(2));
             }
             else if (rowcount > 1) {
@@ -61,7 +62,8 @@ public class SQLAuthDAO implements AuthDAO {
             var result = statement.executeQuery();
             int rowcount = 0;
             if (result.last()) { rowcount = result.getRow(); }
-            if (rowcount == 1) {
+            if (rowcount == 0) { throw new DataAccessException("Error: unauthorized"); }
+            else if (rowcount == 1) {
                 username = result.getString(1);
             }
             else if (rowcount > 1) {
@@ -98,12 +100,15 @@ public class SQLAuthDAO implements AuthDAO {
 
         @Override
     public void deleteAuth(String authToken) throws DataAccessException {
-        try (var statement = DatabaseManager.getConnection().prepareStatement(
-                "DELETE FROM auth WHERE authToken=?")) {
-            statement.setString(1, authToken);
-            statement.executeUpdate();
-        } catch (SQLException ex) {
-            throw new DataAccessException(ex.getMessage());
+        if (!(authExists(authToken))) { throw new DataAccessException("Error: unauthorized"); }
+        else {
+            try (var statement = DatabaseManager.getConnection().prepareStatement(
+                    "DELETE FROM auth WHERE authToken=?")) {
+                statement.setString(1, authToken);
+                statement.executeUpdate();
+            } catch (SQLException ex) {
+                throw new DataAccessException(ex.getMessage());
+            }
         }
     }
 }

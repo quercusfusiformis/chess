@@ -42,7 +42,8 @@ public class SQLUserDAO implements UserDAO {
             var result = statement.executeQuery();
             int rowcount = 0;
             if (result.last()) { rowcount = result.getRow(); }
-            if (rowcount == 1) {
+            if (rowcount == 0) { throw new DataAccessException("Error: user not registered"); }
+            else if (rowcount == 1) {
                 returnUser = new UserData(result.getString(1),
                         result.getString(2), result.getString(3));
             }

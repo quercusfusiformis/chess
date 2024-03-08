@@ -6,9 +6,8 @@ import com.google.gson.Gson;
 import java.sql.Statement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-
-import chess.ChessGame;
 import model.GameData;
+import chess.ChessGame;
 
 public class SQLGameDAO implements GameDAO {
     @Override
@@ -54,6 +53,7 @@ public class SQLGameDAO implements GameDAO {
     }
 
     public void delGame(int gameID) throws DataAccessException {
+        if (!(gameExists(gameID))) { throw new DataAccessException("Error: no game with given gameID"); }
         try (var statement = DatabaseManager.getConnection().prepareStatement(
                 "DELETE FROM game WHERE gameID=?",
                 ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY)) {
@@ -74,7 +74,8 @@ public class SQLGameDAO implements GameDAO {
             var result = statement.executeQuery();
             int rowcount = 0;
             if (result.last()) { rowcount = result.getRow(); }
-            if (rowcount == 1) {
+            if (rowcount == 0) { throw new DataAccessException("Error: no game with given gameID"); }
+            else if (rowcount == 1) {
                 returnGame = new GameData(result.getInt(1),
                                         result.getString(2),
                                         result.getString(3),
