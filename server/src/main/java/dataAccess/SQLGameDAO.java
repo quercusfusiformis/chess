@@ -1,7 +1,7 @@
 package dataAccess;
 
 import java.util.Collection;
-import java.util.HashSet;
+import java.util.ArrayList;
 import com.google.gson.Gson;
 import java.sql.Statement;
 import java.sql.ResultSet;
@@ -36,6 +36,32 @@ public class SQLGameDAO implements GameDAO {
             throw new DataAccessException(ex.getMessage());
         }
         return newGameID;
+    }
+
+    public void addGame(int gameID, String whiteUsername, String blackUsername, String gameName, String game) throws DataAccessException {
+        try (var statement = DatabaseManager.getConnection().prepareStatement(
+                "INSERT INTO game (gameID, whiteUsername, blackUsername, gameName, game) VALUES (?, ?, ?, ?, ?)",
+                ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY)) {
+            statement.setInt(1, gameID);
+            statement.setString(2, whiteUsername);
+            statement.setString(3, blackUsername);
+            statement.setString(4, gameName);
+            statement.setString(5, game);
+            statement.executeUpdate();
+        } catch (SQLException ex) {
+            throw new DataAccessException(ex.getMessage());
+        }
+    }
+
+    public void delGame(int gameID) throws DataAccessException {
+        try (var statement = DatabaseManager.getConnection().prepareStatement(
+                "DELETE FROM game WHERE gameID=?",
+                ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY)) {
+            statement.setInt(1, gameID);
+            statement.executeUpdate();
+        } catch (SQLException ex) {
+            throw new DataAccessException(ex.getMessage());
+        }
     }
 
     @Override
@@ -88,7 +114,7 @@ public class SQLGameDAO implements GameDAO {
 
     @Override
     public Collection<GameData> listGames() throws DataAccessException {
-        Collection<GameData> games = new HashSet<>();
+        Collection<GameData> games = new ArrayList<>();
         try (var statement = DatabaseManager.getConnection().prepareStatement("SELECT * FROM game",
                 ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY)) {
             var result = statement.executeQuery();
@@ -107,16 +133,45 @@ public class SQLGameDAO implements GameDAO {
 
     @Override
     public void updatePlayerInGame(int gameID, String username, String color) throws IllegalArgumentException, DataAccessException {
-
+        GameData toUpdate = getGame(gameID);
+        if (toUpdate == null) { throw new DataAccessException("Error: bad request"); }
+        else {
+            delGame(toUpdate.gameID());
+            if (color.equals("WHITE")) {
+                addGame(toUpdate.gameID(), username, toUpdate.blackUsername(), toUpdate.gameName(), toUpdate.game());
+            } else if (color.equals("BLACK")) {
+                addGame(toUpdate.gameID(), toUpdate.whiteUsername(), username, toUpdate.gameName(), toUpdate.game());
+            } else {
+                throw new IllegalArgumentException("Error: invalid color parameter");
+            }
+        }
     }
 
     @Override
     public boolean colorFreeInGame(String color, int gameID) throws DataAccessException {
-        return false;
+        if (gameExists(gameID)) {
+            GameData gameToCheck = getGame(gameID);
+            return gameToCheck.isColorAvailable(color);
+        }
+        else {
+            throw new DataAccessException("Error: bad request");
+        }
     }
 
     @Override
     public void joinGameAsPlayer(int gameID, String username, String color) throws DataAccessException {
-
+        boolean colorFree;
+        try {
+            colorFree = colorFreeInGame(color, gameID);
+        }
+        catch (IllegalArgumentException ex) {
+            throw new DataAccessException("Error: bad request");
+        }
+        if (colorFree) {
+            updatePlayerInGame(gameID, username, color);
+        }
+        else {
+            throw new DataAccessException("Error: already taken");
+        }
     }
 }

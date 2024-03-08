@@ -13,6 +13,8 @@ import model.GameData;
 class SQLGameDAOTests {
     private final SQLGameDAO gameDAO = new SQLGameDAO();
 
+    private final String defaultGame = new Gson().toJson(new ChessGame());
+
     private int puzzleChessGameID;
 
     @BeforeEach
@@ -68,8 +70,37 @@ class SQLGameDAOTests {
 
     @Test
     @Order(6)
+    @DisplayName("addGame (+)")
+    void addGame_positive() throws DataAccessException {
+        gameDAO.addGame(76, "Conner", "Jack", "The Big Game", "{\"field\":\"hehe\"}");
+        assertEquals(4, DatabaseManager.getNumRows("game"));
+    }
+
+    @Test
+    @Order(6)
+    @DisplayName("addGame (-)")
+    void addGame_negative() throws DataAccessException {
+    }
+
+    @Test
+    @Order(8)
+    @DisplayName("delGame (+)")
+    void delGame_positive() throws DataAccessException {
+        gameDAO.delGame(puzzleChessGameID);
+        assertEquals(2, DatabaseManager.getNumRows("game"));
+    }
+
+    @Test
+    @Order(8)
+    @DisplayName("delGame (-)")
+    void delGame_negative() throws DataAccessException {
+    }
+
+    @Test
+    @Order(6)
     @DisplayName("gameExists (+)")
-    void gameExists_positive() {
+    void gameExists_positive() throws DataAccessException {
+        assertTrue(gameDAO.gameExists(puzzleChessGameID));
     }
 
     @Test
@@ -81,7 +112,8 @@ class SQLGameDAOTests {
     @Test
     @Order(8)
     @DisplayName("listGames (+)")
-    void listGames_positive() {
+    void listGames_positive() throws DataAccessException {
+        assertEquals(3, gameDAO.listGames().size());
     }
 
     @Test
@@ -93,7 +125,10 @@ class SQLGameDAOTests {
     @Test
     @Order(10)
     @DisplayName("updatePlayerInGame (+)")
-    void updatePlayerInGame_positive() {
+    void updatePlayerInGame_positive() throws DataAccessException {
+        GameData expectedGame = new GameData(puzzleChessGameID, "baloony", null, "Puzzle Chess", defaultGame);
+        gameDAO.updatePlayerInGame(puzzleChessGameID, "baloony", "WHITE");
+        assertEquals(expectedGame, gameDAO.getGame(puzzleChessGameID));
     }
 
     @Test
@@ -105,7 +140,8 @@ class SQLGameDAOTests {
     @Test
     @Order(12)
     @DisplayName("colorFreeInGame (+)")
-    void colorFreeInGame_positive() {
+    void colorFreeInGame_positive() throws DataAccessException {
+        assertTrue(gameDAO.colorFreeInGame("WHITE", puzzleChessGameID));
     }
 
     @Test
