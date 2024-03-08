@@ -3,6 +3,7 @@ package dataAccess;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import model.UserData;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 public class SQLUserDAO implements UserDAO {
     @Override
@@ -20,7 +21,8 @@ public class SQLUserDAO implements UserDAO {
             try (var statement = DatabaseManager.getConnection().prepareStatement(
                     "INSERT INTO user (username, password, email) VALUES(?,?, ?)")) {
                 statement.setString(1, username);
-                statement.setString(2, password);
+                String hashedPassword = new BCryptPasswordEncoder().encode(password);
+                statement.setString(2, hashedPassword);
                 statement.setString(3, email);
                 statement.executeUpdate();
             } catch (SQLException ex) {
@@ -80,7 +82,7 @@ public class SQLUserDAO implements UserDAO {
 
     @Override
     public boolean userPasswordMatches(String testUsername, String password) throws DataAccessException {
-        String testPassword = null;
+        String expectedPassword = null;
         try (var statement = DatabaseManager.getConnection().prepareStatement(
                 "SELECT password FROM user WHERE username=?",
                 ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY)) {
@@ -89,7 +91,7 @@ public class SQLUserDAO implements UserDAO {
             int rowcount = 0;
             if (result.last()) { rowcount = result.getRow(); }
             if (rowcount == 1) {
-                testPassword = result.getString(1);
+                expectedPassword = result.getString(1);
             }
             else if (rowcount > 1) {
                 throw new DataAccessException("Error: More than one row matching username in database");
@@ -97,7 +99,7 @@ public class SQLUserDAO implements UserDAO {
         } catch (SQLException ex) {
             throw new DataAccessException(ex.getMessage());
         }
-        if (!(testPassword == null)) { return testPassword.equals(password); }
+        if (!(expectedPassword == null)) { return new BCryptPasswordEncoder().matches(password, expectedPassword); }
         else { return false; }
     }
 }

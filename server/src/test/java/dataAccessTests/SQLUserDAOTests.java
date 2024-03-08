@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.*;
 import dataAccess.DatabaseManager;
 import dataAccess.SQLUserDAO;
 import dataAccess.DataAccessException;
-import model.UserData;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class SQLUserDAOTests {
@@ -55,8 +54,7 @@ class SQLUserDAOTests {
     @Order(4)
     @DisplayName("getUser (+)")
     void getUser_positive() throws DataAccessException {
-        UserData testRichard = new UserData("richard", "biggestmoth", "bassproshop@haken.com");
-        assertEquals(testRichard, userDAO.getUser("richard"));
+        assertEquals("richard", userDAO.getUser("richard").username());
     }
     @Test
     @Order(5)
