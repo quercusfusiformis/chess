@@ -4,9 +4,11 @@ import org.junit.jupiter.api.*;
 import static org.junit.jupiter.api.Assertions.*;
 import dataAccess.DatabaseManager;
 import dataAccess.SQLGameDAO;
+import dataAccess.DataAccessException;
+import model.GameData;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-class SQLGameDAOTest {
+class SQLGameDAOTests {
     private final SQLGameDAO gameDAO = new SQLGameDAO();
 
     @BeforeEach

@@ -12,7 +12,7 @@ import requestRecords.JoinGameRequest;
 import dataAccess.DataAccessException;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-class GameServiceTest {
+class GameServiceTests {
     private final AuthorizationService authService = new AuthorizationService();
 
     private final DatabaseOperationsService doService = new DatabaseOperationsService();

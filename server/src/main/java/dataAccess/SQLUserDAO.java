@@ -81,7 +81,7 @@ public class SQLUserDAO implements UserDAO {
     public boolean userPasswordMatches(String testUsername, String password) throws DataAccessException {
         String testPassword = null;
         try (var statement = DatabaseManager.getConnection().prepareStatement(
-                "SELECT username FROM user WHERE username=?",
+                "SELECT password FROM user WHERE username=?",
                 ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY)) {
             statement.setString(1, testUsername);
             var result = statement.executeQuery();

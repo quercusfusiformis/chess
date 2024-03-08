@@ -8,7 +8,7 @@ import dataAccess.DataAccessException;
 import model.AuthData;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-class SQLAuthDAOTest {
+class SQLAuthDAOTests {
     private final SQLAuthDAO authDAO = new SQLAuthDAO();
 
     private String rossAuthToken;

@@ -10,7 +10,7 @@ import requestRecords.RegisterRequest;
 import dataAccess.DataAccessException;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-class DatabaseOperationsServiceTest {
+class DatabaseOperationsServiceTests {
     private final AuthorizationService authService = new AuthorizationService();
 
     private final DatabaseOperationsService doService = new DatabaseOperationsService();
