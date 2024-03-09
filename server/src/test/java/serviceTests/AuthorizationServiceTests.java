@@ -23,6 +23,7 @@ class AuthorizationServiceTests {
 
     @BeforeEach
     void setUp() throws DataAccessException {
+        this.doService.clear();
         String lorinAuth = this.authService.register(new RegisterRequest(
                 "79fierykittens", "mytwentyfilthybunnies", "8@gmail.com")).authToken();
         String tammyAuth = this.authService.register(new RegisterRequest(
