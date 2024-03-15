@@ -14,5 +14,6 @@ class BoardPresenterTest {
     @Test
     void printBoardDefault() {
         BoardPresenter.printBoard(BoardPresenter.defaultBoard, ChessGame.TeamColor.WHITE);
+        BoardPresenter.printBoard(BoardPresenter.defaultBoard, ChessGame.TeamColor.BLACK);
     }
 }
