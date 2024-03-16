@@ -46,7 +46,7 @@ class AuthorizationServiceTests {
     @Test
     @Order(1)
     @DisplayName("register (+)")
-    void register_positive() throws DataAccessException {
+    void registerPositive() throws DataAccessException {
         String tylerAuth = this.authService.register(new RegisterRequest(
                 "tyleransom", "applepie1", "appletyler@pie.com")).authToken();
         this.authService.logout(tylerAuth);
@@ -55,7 +55,7 @@ class AuthorizationServiceTests {
     @Test
     @Order(2)
     @DisplayName("register (-)")
-    void register_negative() {
+    void registerNegative() {
         DataAccessException exception = assertThrows(DataAccessException.class, () -> this.authService.register(new RegisterRequest("tyleransom", null, "appletyler@pie.com")));
         assertEquals("Error: bad request", exception.getMessage());
     }
@@ -63,7 +63,7 @@ class AuthorizationServiceTests {
     @Test
     @Order(3)
     @DisplayName("login (+)")
-    void login_positive() throws DataAccessException {
+    void loginPositive() throws DataAccessException {
         String newAuth = this.authService.login(new LoginRequest("becca23", "yoyoyogas")).authToken();
         this.authService.logout(newAuth);
     }
@@ -71,7 +71,7 @@ class AuthorizationServiceTests {
     @Test
     @Order(4)
     @DisplayName("login (-)")
-    void login_negative() {
+    void loginNegative() {
         DataAccessException exception = assertThrows(DataAccessException.class, () -> this.authService.login(new LoginRequest("becca", "yoyoyogas")));
         assertEquals("Error: unauthorized", exception.getMessage());
     }
@@ -79,14 +79,14 @@ class AuthorizationServiceTests {
     @Test
     @Order(5)
     @DisplayName("logout (+)")
-    void logout_positive() throws DataAccessException {
+    void logoutPositive() throws DataAccessException {
         this.authService.logout(this.ryanAuth);
     }
 
     @Test
     @Order(6)
     @DisplayName("logout (-)")
-    void logout_negative() {
+    void logoutNegative() {
         DataAccessException exception = assertThrows(DataAccessException.class, () -> this.authService.logout(UUID.randomUUID().toString()));
         assertEquals("Error: unauthorized", exception.getMessage());
     }

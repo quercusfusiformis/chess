@@ -45,7 +45,7 @@ class GameServiceTests {
     @Test
     @Order(1)
     @DisplayName("listGames (+)")
-    void listGames_positive() throws DataAccessException {
+    void listGamesPositive() throws DataAccessException {
         int length = this.gameService.listGames(this.ryanAuth).games().size();
         assertEquals(3, length);
     }
@@ -53,7 +53,7 @@ class GameServiceTests {
     @Test
     @Order(2)
     @DisplayName("listGames (-)")
-    void listGames_negative() {
+    void listGamesNegative() {
         DataAccessException exception = assertThrows(DataAccessException.class, () -> this.gameService.listGames(UUID.randomUUID().toString()));
         assertEquals("Error: unauthorized", exception.getMessage());
     }
@@ -61,7 +61,7 @@ class GameServiceTests {
     @Test
     @Order(3)
     @DisplayName("createGame (+)")
-    void createGame_positive() throws DataAccessException {
+    void createGamePositive() throws DataAccessException {
         this.gameService.createGame(new CreateGameRequest("chest.org"), ryanAuth);
         int length = this.gameService.listGames(this.ryanAuth).games().size();
         assertEquals(4, length);
@@ -70,7 +70,7 @@ class GameServiceTests {
     @Test
     @Order(4)
     @DisplayName("createGame (-)")
-    void createGame_negative() {
+    void createGameNegative() {
         DataAccessException exception = assertThrows(DataAccessException.class, () ->
                 this.gameService.createGame(new CreateGameRequest("chest.org"), UUID.randomUUID().toString()));
         assertEquals("Error: unauthorized", exception.getMessage());
@@ -79,7 +79,7 @@ class GameServiceTests {
     @Test
     @Order(5)
     @DisplayName("joinGame (+)")
-    void joinGame_positive() throws DataAccessException {
+    void joinGamePositive() throws DataAccessException {
         int newGameID = this.gameService.createGame(new CreateGameRequest("chest.org"), ryanAuth).gameID();
         this.gameService.joinGame(new JoinGameRequest("BLACK", newGameID), ryanAuth);
     }
@@ -87,7 +87,7 @@ class GameServiceTests {
     @Test
     @Order(6)
     @DisplayName("joinGame (-)")
-    void joinGame_negative() throws DataAccessException {
+    void joinGameNegative() throws DataAccessException {
         int newGameID = this.gameService.createGame(new CreateGameRequest("chest.org"), ryanAuth).gameID();
         this.gameService.joinGame(new JoinGameRequest("BLACK", newGameID), ryanAuth);
         DataAccessException exception = assertThrows(DataAccessException.class, () ->

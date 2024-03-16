@@ -1,7 +1,6 @@
 package serverCommunication;
 
 import com.google.gson.Gson;
-import spark.Request;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
@@ -43,14 +42,14 @@ public class ServerFacade {
 
     public void logout(String authToken) throws CommunicationException {
         try {
-            HttpURLConnection connection = makeHTTPRequest(serverPort, urlStemLocal, "/session", "DELETE", "");
+            HttpURLConnection connection = makeHTTPRequest(serverPort, urlStemLocal, "/session", "DELETE", "", authToken);
         } catch (Exception ex) { throw new CommunicationException(ex.getMessage()); }
     }
 
     public ListGamesResponse listGames(String authToken) throws CommunicationException {
         ListGamesResponse response = null;
         try {
-            HttpURLConnection connection = makeHTTPRequest(serverPort, urlStemLocal, "/game", "GET", "");
+            HttpURLConnection connection = makeHTTPRequest(serverPort, urlStemLocal, "/game", "GET", "", authToken);
             response = getHTTPResponse(connection, ListGamesResponse.class);
         } catch (Exception ex) { throw new CommunicationException(ex.getMessage()); }
         return response;
@@ -60,7 +59,7 @@ public class ServerFacade {
         CreateGameResponse response = null;
         try {
             String body = new Gson().toJson(request);
-            HttpURLConnection connection = makeHTTPRequest(serverPort, urlStemLocal, "/game", "POST", body);
+            HttpURLConnection connection = makeHTTPRequest(serverPort, urlStemLocal, "/game", "POST", body, authToken);
             response = getHTTPResponse(connection, CreateGameResponse.class);
         } catch (Exception ex) { throw new CommunicationException(ex.getMessage()); }
         return response;
@@ -68,7 +67,7 @@ public class ServerFacade {
 
     public void joinGame(JoinGameRequest request, String authToken) throws CommunicationException {
         try {
-            HttpURLConnection connection = makeHTTPRequest(serverPort, urlStemLocal, "/game", "PUT", "");
+            HttpURLConnection connection = makeHTTPRequest(serverPort, urlStemLocal, "/game", "PUT", "", authToken);
         } catch (Exception ex) { throw new CommunicationException(ex.getMessage()); }
     }
 
@@ -76,14 +75,6 @@ public class ServerFacade {
         try {
             HttpURLConnection connection = makeHTTPRequest(serverPort, urlStemLocal, "/db", "DELETE", "");
         } catch (Exception ex) { throw new CommunicationException(ex.getMessage()); }
-    }
-
-    protected static <T> T getBody(Request request, Class<T> clazz) {
-        var body = new Gson().fromJson(request.body(), clazz);
-        if (body == null) {
-            throw new RuntimeException("missing required body");
-        }
-        return body;
     }
 
     private HttpURLConnection makeHTTPRequest(int port, String urlStem, String path, String method, String body, String authHeader) throws URISyntaxException, IOException {

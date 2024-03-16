@@ -44,7 +44,7 @@ class DatabaseOperationsServiceTests {
     @Test
     @Order(1)
     @DisplayName("clear (+)")
-    void clear_positive() throws DataAccessException {
+    void clearPositive() throws DataAccessException {
         this.doService.clear();
         DataAccessException exception = assertThrows(DataAccessException.class, () -> this.authService.logout(this.ryanAuth));
         assertEquals("Error: unauthorized", exception.getMessage());

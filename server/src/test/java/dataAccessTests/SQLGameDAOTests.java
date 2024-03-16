@@ -33,7 +33,7 @@ class SQLGameDAOTests {
     @Test
     @Order(1)
     @DisplayName("clear (+)")
-    void clear_positive() throws DataAccessException {
+    void clearPositive() throws DataAccessException {
         gameDAO.clear();
         assertEquals(0, DatabaseManager.getNumRows("game"));
     }
@@ -41,7 +41,7 @@ class SQLGameDAOTests {
     @Test
     @Order(2)
     @DisplayName("createGame (+)")
-    void createGame_positive() throws DataAccessException {
+    void createGamePositive() throws DataAccessException {
         gameDAO.createGame("The Game of Love");
         gameDAO.createGame("GameGrumps");
         assertEquals(5, DatabaseManager.getNumRows("game"));
@@ -50,7 +50,7 @@ class SQLGameDAOTests {
     @Test
     @Order(3)
     @DisplayName("createGame (-)")
-    void createGame_negative() {
+    void createGameNegative() {
         DataAccessException exception = assertThrows(DataAccessException.class, () -> gameDAO.createGame(new Gson().toJson(new ChessGame())));
         assertEquals("Data truncation: Data too long for column 'gameName' at row 1", exception.getMessage());
     }
@@ -58,7 +58,7 @@ class SQLGameDAOTests {
     @Test
     @Order(6)
     @DisplayName("addGame (+)")
-    void addGame_positive() throws DataAccessException {
+    void addGamePositive() throws DataAccessException {
         gameDAO.addGame(76, "Conner", "Jack", "The Big Game", "{\"field\":\"hehe\"}");
         assertEquals(4, DatabaseManager.getNumRows("game"));
     }
@@ -66,7 +66,7 @@ class SQLGameDAOTests {
     @Test
     @Order(6)
     @DisplayName("addGame (-)")
-    void addGame_negative() {
+    void addGameNegative() {
         DataAccessException exception = assertThrows(DataAccessException.class, () -> gameDAO.addGame(-1, null, null, null, null));
         assertEquals("Column 'gameName' cannot be null", exception.getMessage());
     }
@@ -74,7 +74,7 @@ class SQLGameDAOTests {
     @Test
     @Order(8)
     @DisplayName("delGame (+)")
-    void delGame_positive() throws DataAccessException {
+    void delGamePositive() throws DataAccessException {
         gameDAO.delGame(puzzleChessGameID);
         assertEquals(2, DatabaseManager.getNumRows("game"));
     }
@@ -82,7 +82,7 @@ class SQLGameDAOTests {
     @Test
     @Order(8)
     @DisplayName("delGame (-)")
-    void delGame_negative() {
+    void delGameNegative() {
         DataAccessException exception = assertThrows(DataAccessException.class, () -> gameDAO.delGame(90));
         assertEquals("Error: no game with given gameID", exception.getMessage());
     }
@@ -90,7 +90,7 @@ class SQLGameDAOTests {
     @Test
     @Order(4)
     @DisplayName("getGame (+)")
-    void getGame_positive() throws DataAccessException {
+    void getGamePositive() throws DataAccessException {
         String newGameJson = new Gson().toJson(new ChessGame());
         GameData expectedGame = new GameData(puzzleChessGameID, null, null, "Puzzle Chess", newGameJson);
         assertEquals(expectedGame, gameDAO.getGame(puzzleChessGameID));
@@ -99,7 +99,7 @@ class SQLGameDAOTests {
     @Test
     @Order(5)
     @DisplayName("getGame (-)")
-    void getGame_negative() {
+    void getGameNegative() {
         DataAccessException exception = assertThrows(DataAccessException.class, () -> gameDAO.getGame(89));
         assertEquals("Error: no game with given gameID", exception.getMessage());
     }
@@ -107,35 +107,35 @@ class SQLGameDAOTests {
     @Test
     @Order(6)
     @DisplayName("gameExists (+)")
-    void gameExists_positive() throws DataAccessException {
+    void gameExistsPositive() throws DataAccessException {
         assertTrue(gameDAO.gameExists(puzzleChessGameID));
     }
 
     @Test
     @Order(7)
     @DisplayName("gameExists (-)")
-    void gameExists_negative() throws DataAccessException {
+    void gameExistsNegative() throws DataAccessException {
         assertFalse(gameDAO.gameExists(745));
     }
 
     @Test
     @Order(8)
     @DisplayName("listGames (+)")
-    void listGames_positive() throws DataAccessException {
+    void listGamesPositive() throws DataAccessException {
         assertEquals(3, gameDAO.listGames().size());
     }
 
     @Test
     @Order(9)
     @DisplayName("listGames (-)")
-    void listGames_negative() throws DataAccessException {
+    void listGamesNegative() throws DataAccessException {
         assertNotEquals(7, gameDAO.listGames().size());
     }
 
     @Test
     @Order(10)
     @DisplayName("updatePlayerInGame (+)")
-    void updatePlayerInGame_positive() throws DataAccessException {
+    void updatePlayerInGamePositive() throws DataAccessException {
         GameData expectedGame = new GameData(puzzleChessGameID, "baloony", null, "Puzzle Chess", defaultGame);
         gameDAO.updatePlayerInGame(puzzleChessGameID, "baloony", "WHITE");
         assertEquals(expectedGame, gameDAO.getGame(puzzleChessGameID));
@@ -144,7 +144,7 @@ class SQLGameDAOTests {
     @Test
     @Order(11)
     @DisplayName("updatePlayerInGame (-)")
-    void updatePlayerInGame_negative() {
+    void updatePlayerInGameNegative() {
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> gameDAO.updatePlayerInGame(puzzleChessGameID, "dally", "BLUE"));
         assertEquals("Error: invalid color parameter", exception.getMessage());
     }
@@ -152,14 +152,14 @@ class SQLGameDAOTests {
     @Test
     @Order(12)
     @DisplayName("colorFreeInGame (+)")
-    void colorFreeInGame_positive() throws DataAccessException {
+    void colorFreeInGamePositive() throws DataAccessException {
         assertTrue(gameDAO.colorFreeInGame("WHITE", puzzleChessGameID));
     }
 
     @Test
     @Order(13)
     @DisplayName("colorFreeInGame (-)")
-    void colorFreeInGame_negative() throws DataAccessException {
+    void colorFreeInGameNegative() throws DataAccessException {
         gameDAO.updatePlayerInGame(puzzleChessGameID, "bobby", "WHITE");
         assertFalse(gameDAO.colorFreeInGame("WHITE", puzzleChessGameID));
     }
@@ -167,7 +167,7 @@ class SQLGameDAOTests {
     @Test
     @Order(14)
     @DisplayName("joinGameAsPlayer (+)")
-    void joinGameAsPlayer_positive() throws DataAccessException {
+    void joinGameAsPlayerPositive() throws DataAccessException {
         gameDAO.updatePlayerInGame(puzzleChessGameID, "bobby", "WHITE");
         gameDAO.updatePlayerInGame(puzzleChessGameID, "hobby", "BLACK");
         GameData expectedGame = new GameData(puzzleChessGameID, "bobby", "hobby", "Puzzle Chess", defaultGame);
@@ -177,7 +177,7 @@ class SQLGameDAOTests {
     @Test
     @Order(15)
     @DisplayName("joinGameAsPlayer (-)")
-    void joinGameAsPlayer_negative() throws DataAccessException {
+    void joinGameAsPlayerNegative() throws DataAccessException {
         gameDAO.updatePlayerInGame(puzzleChessGameID, "bobby", "WHITE");
         gameDAO.updatePlayerInGame(puzzleChessGameID, "hobby", "BLACK");
         DataAccessException exception = assertThrows(DataAccessException.class, () -> gameDAO.joinGameAsPlayer(puzzleChessGameID, "gobby", "WHITE"));

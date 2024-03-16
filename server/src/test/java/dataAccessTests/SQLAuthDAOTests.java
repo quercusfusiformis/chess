@@ -35,7 +35,7 @@ class SQLAuthDAOTests {
     @Test
     @Order(1)
     @DisplayName("clear (+)")
-    void clear_positive() throws DataAccessException {
+    void clearPositive() throws DataAccessException {
         authDAO.clear();
         assertEquals(0, DatabaseManager.getNumRows("auth"));
     }
@@ -43,7 +43,7 @@ class SQLAuthDAOTests {
     @Test
     @Order(2)
     @DisplayName("createAuth (+)")
-    void createAuth_positive() throws DataAccessException {
+    void createAuthPositive() throws DataAccessException {
         authDAO.createAuth("echo8358");
         authDAO.createAuth("davidisamanwithalargesandwich");
         authDAO.createAuth("lorinwithano");
@@ -53,7 +53,7 @@ class SQLAuthDAOTests {
     @Test
     @Order(3)
     @DisplayName("createAuth (-)")
-    void createAuth_negative() {
+    void createAuthNegative() {
         DataAccessException exception = assertThrows(DataAccessException.class, () -> authDAO.createAuth(new Gson().toJson(new ChessGame())));
         assertEquals("Data truncation: Data too long for column 'username' at row 1", exception.getMessage());
     }
@@ -61,7 +61,7 @@ class SQLAuthDAOTests {
     @Test
     @Order(4)
     @DisplayName("getAuth (+)")
-    void getAuth_positive() throws DataAccessException {
+    void getAuthPositive() throws DataAccessException {
         AuthData testData = authDAO.getAuth(rossAuthToken);
         AuthData actualData = new AuthData(rossAuthToken, "ross");
         assertEquals(actualData, testData);
@@ -70,7 +70,7 @@ class SQLAuthDAOTests {
     @Test
     @Order(5)
     @DisplayName("getAuth (-)")
-    void getAuth_negative() {
+    void getAuthNegative() {
         DataAccessException exception = assertThrows(DataAccessException.class, () -> authDAO.getAuth(UUID.randomUUID().toString()));
         assertEquals("Error: unauthorized", exception.getMessage());
     }
@@ -78,14 +78,14 @@ class SQLAuthDAOTests {
     @Test
     @Order(6)
     @DisplayName("getUsername (+)")
-    void getUsername_positive() {
+    void getUsernamePositive() {
         assertEquals("ross", authDAO.getUsername(rossAuthToken));
     }
 
     @Test
     @Order(7)
     @DisplayName("getUsername (-)")
-    void getUsername_negative() {
+    void getUsernameNegative() {
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> authDAO.getUsername(UUID.randomUUID().toString()));
         assertEquals("Error: unauthorized", exception.getMessage());
     }
@@ -93,21 +93,21 @@ class SQLAuthDAOTests {
     @Test
     @Order(8)
     @DisplayName("authExists (+)")
-    void authExists_positive() throws DataAccessException {
+    void authExistsPositive() throws DataAccessException {
         assertTrue(authDAO.authExists(rossAuthToken));
     }
 
     @Test
     @Order(9)
     @DisplayName("authExists (-)")
-    void authExists_negative() {
+    void authExistsNegative() {
 //        DataAccessException exception = assertThrows(DataAccessException.class, () -> authDAO));
     }
 
     @Test
     @Order(10)
     @DisplayName("deleteAuth (+)")
-    void deleteAuth_positive() throws DataAccessException {
+    void deleteAuthPositive() throws DataAccessException {
         authDAO.deleteAuth(rossAuthToken);
         assertFalse(authDAO.authExists(rossAuthToken));
     }
@@ -115,7 +115,7 @@ class SQLAuthDAOTests {
     @Test
     @Order(11)
     @DisplayName("deleteAuth (-)")
-    void deleteAuth_negative() {
+    void deleteAuthNegative() {
         DataAccessException exception = assertThrows(DataAccessException.class, () -> authDAO.deleteAuth(UUID.randomUUID().toString()));
         assertEquals("Error: unauthorized", exception.getMessage());
     }
