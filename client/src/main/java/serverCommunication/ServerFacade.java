@@ -3,6 +3,8 @@ package serverCommunication;
 import com.google.gson.Gson;
 import spark.Request;
 
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.io.OutputStream;
 import java.net.URI;
@@ -50,21 +52,47 @@ public class ServerFacade {
         return body;
     }
 
-    private HttpURLConnection makeRequest(int port, String url, String method, String body) throws URISyntaxException, IOException {
+    private HttpURLConnection makeHTTPRequest(int port, String url, String method, String body) throws URISyntaxException, IOException {
         URI uri = new URI(url);
         HttpURLConnection http = (HttpURLConnection) uri.toURL().openConnection();
         http.setRequestMethod(method);
-        writeRequestBody(http, body);
+        writeHTTPRequestBody(http, body);
         http.connect();
         return http;
     }
 
-    private static void writeRequestBody(HttpURLConnection http, String body) throws IOException {
+    private static void writeHTTPRequestBody(HttpURLConnection http, String body) throws IOException {
         if (!body.isEmpty()) {
             http.setDoInput(true);
             try (OutputStream outputStream = http.getOutputStream()) {
                 outputStream.write(body.getBytes());
             }
         }
+    }
+
+    private static String getHTTPResponse(HttpURLConnection http) throws IOException {
+        int statusCode = http.getResponseCode();
+        String statusMessage = http.getResponseMessage();
+        String body = "";
+        try (InputStream inputStream = http.getInputStream()) {
+            InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
+            body = inputStreamReader.toString();
+        }
+        return body;
+    }
+
+    private static <T> T getHTTPResponse(HttpURLConnection http, Class<T> clazz) throws IOException {
+        int statusCode = http.getResponseCode();
+        String statusMessage = http.getResponseMessage();
+        return getHTTPResponseBody(http, clazz);
+    }
+
+    private static <T> T getHTTPResponseBody(HttpURLConnection http, Class<T> clazz) throws IOException {
+        T responseBody;
+        try (InputStream inputStream = http.getInputStream()) {
+            InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
+            responseBody = new Gson().fromJson(inputStreamReader, clazz);
+        }
+        return responseBody;
     }
 }
