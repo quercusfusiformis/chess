@@ -25,11 +25,27 @@ public class DatabaseManager {
                 var host = props.getProperty("db.host");
                 var port = Integer.parseInt(props.getProperty("db.port"));
                 connectionUrl = String.format("jdbc:mysql://%s:%d", host, port);
-
-                createDatabase();
             }
         } catch (Exception ex) {
             throw new RuntimeException("unable to process db.properties. " + ex.getMessage());
+        }
+    }
+
+    // Creates database and handles errors (especially if database is not running)
+    static {
+        try {
+            createDatabase();
+        } catch (DataAccessException ex) {
+            String exceptMessage = ex.getMessage();
+            String notRunningMessage = """
+                    Communications link failure
+
+                    The last packet sent successfully to the server was 0 milliseconds ago. The driver has not received any packets from the server.""";
+            if ((exceptMessage.equals(notRunningMessage))) {
+                throw new RuntimeException("Communications link error. Database may not be running. " +
+                        "Check services.msc for MySQL80 and manually start the database if it is not running.");
+            }
+            throw new RuntimeException(ex.getMessage());
         }
     }
 

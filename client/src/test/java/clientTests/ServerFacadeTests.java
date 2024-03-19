@@ -1,14 +1,22 @@
 package clientTests;
 
 import org.junit.jupiter.api.*;
+import requestRecords.LoginRequest;
+import requestRecords.RegisterRequest;
 import server.Server;
+import serverCommunication.CommunicationException;
 import serverCommunication.ServerFacade;
+import static org.junit.jupiter.api.Assertions.*;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class ServerFacadeTests {
 
     private static Server server;
     private static ServerFacade facade;
+
+    private static final RegisterRequest fozzieRRequest =
+            new RegisterRequest("fozzie", "wackawackaheyhey", "fozzie@bear.com");
+    private static final LoginRequest fozzieLInRequest = new LoginRequest("fozzie", "wackawackaheyhey");
 
     @BeforeAll
     public static void init() {
@@ -26,7 +34,10 @@ public class ServerFacadeTests {
     @Test
     @Order(1)
     @DisplayName("register (+)")
-    public void registerPositive() {}
+    public void registerPositive() throws CommunicationException {
+        facade.register(fozzieRRequest);
+        assertNotNull(facade.login(fozzieLInRequest));
+    }
 
     @Test
     @Order(2)

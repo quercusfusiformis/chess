@@ -78,7 +78,8 @@ public class ServerFacade {
     }
 
     private HttpURLConnection makeHTTPRequest(int port, String urlStem, String path, String method, String body, String authHeader) throws URISyntaxException, IOException {
-        URI uri = new URI(urlStem + port + path);
+        String preURI = weldURLComponents(port, urlStem, path);
+        URI uri = new URI(preURI);
         HttpURLConnection http = (HttpURLConnection) uri.toURL().openConnection();
         http.setRequestMethod(method);
         if (!(authHeader == null)) { http.setRequestProperty("authorization", authHeader); }
@@ -87,13 +88,15 @@ public class ServerFacade {
         return http;
     }
 
+    private String weldURLComponents(int port, String urlStem, String path) { return urlStem + port + path; }
+
     private HttpURLConnection makeHTTPRequest(int port, String urlStem, String path, String method, String body) throws URISyntaxException, IOException {
         return makeHTTPRequest(port, urlStem, path, method, body, null);
     }
 
     private static void writeHTTPRequestBody(HttpURLConnection http, String body) throws IOException {
         if (!body.isEmpty()) {
-            http.setDoInput(true);
+            http.setDoOutput(true);
             try (OutputStream outputStream = http.getOutputStream()) {
                 outputStream.write(body.getBytes());
             }
