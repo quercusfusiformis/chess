@@ -1,13 +1,16 @@
 package clientTests;
 
+import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.*;
+import java.util.ArrayList;
 import requestRecords.CreateGameRequest;
+import requestRecords.JoinGameRequest;
 import requestRecords.LoginRequest;
 import requestRecords.RegisterRequest;
+import responseRecords.ListGameInfo;
 import server.Server;
-import serverCommunication.CommunicationException;
 import serverCommunication.ServerFacade;
-import static org.junit.jupiter.api.Assertions.*;
+import serverCommunication.CommunicationException;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class ServerFacadeTests {
@@ -17,7 +20,6 @@ public class ServerFacadeTests {
     private static final RegisterRequest fozzieRRequest =
             new RegisterRequest("fozzie", "wackawackaheyhey", "fozzie@bear.com");
     private static final LoginRequest fozzieLInRequest = new LoginRequest("fozzie", "wackawackaheyhey");
-    private static final CreateGameRequest fozzieCGRequest = new CreateGameRequest("The Funny Game");
 
     @BeforeAll
     public static void init() {
@@ -79,42 +81,87 @@ public class ServerFacadeTests {
     @Test
     @Order(5)
     @DisplayName("logout (+)")
-    public void logoutPositive() {}
+    public void logoutPositive() throws CommunicationException {
+        String fozzieAuth = facade.register(fozzieRRequest).authToken();
+        facade.logout(fozzieAuth);
+        CommunicationException exception = assertThrows(CommunicationException.class, () -> facade.logout(fozzieAuth));
+        assertEquals("Server returned: 401 Unauthorized", exception.getMessage());
+    }
 
     @Test
     @Order(6)
     @DisplayName("logout (-)")
-    public void logoutNegative() {}
+    public void logoutNegative() {
+        CommunicationException exception = assertThrows(CommunicationException.class, () -> facade.logout("hehe"));
+        assertEquals("Server returned: 401 Unauthorized", exception.getMessage());
+    }
 
     @Test
     @Order(7)
     @DisplayName("listGames (+)")
-    public void listGamesPositive() {}
+    public void listGamesPositive() throws CommunicationException {
+        String fozzieAuth = facade.register(fozzieRRequest).authToken();
+        facade.createGame(new CreateGameRequest("The Imitation Game"), fozzieAuth);
+        facade.createGame(new CreateGameRequest("A Hat that says Gamer"), fozzieAuth);
+        facade.createGame(new CreateGameRequest("Animal Well"), fozzieAuth);
+        ArrayList<ListGameInfo> games = facade.listGames(fozzieAuth).games();
+        assertEquals(new ListGameInfo(2, null, null, "A Hat that says Gamer"),
+                games.get(1));
+    }
 
     @Test
     @Order(8)
     @DisplayName("(listGames (-)")
-    public void listGamesNegative() {}
+    public void listGamesNegative() {
+        CommunicationException exception = assertThrows(CommunicationException.class, () -> facade.listGames("hehe"));
+        assertEquals("Server returned: 401 Unauthorized", exception.getMessage());
+    }
 
     @Test
     @Order(9)
     @DisplayName("createGame (+)")
-    public void createGamePositive() {}
+    public void createGamePositive() throws CommunicationException {
+        String fozzieAuth = facade.register(fozzieRRequest).authToken();
+        facade.createGame(new CreateGameRequest("The Imitation Game"), fozzieAuth);
+        int gamerGameID = facade.createGame(new CreateGameRequest("A Hat that says Gamer"), fozzieAuth).gameID();
+        facade.createGame(new CreateGameRequest("Animal Well"), fozzieAuth);
+        ArrayList<ListGameInfo> games = facade.listGames(fozzieAuth).games();
+        assertEquals(gamerGameID, games.get(1).gameID());
+    }
 
     @Test
     @Order(10)
     @DisplayName("createGame (-)")
-    public void createGameNegative() {}
+    public void createGameNegative() {
+        CommunicationException exception = assertThrows(CommunicationException.class, () ->
+                facade.createGame(new CreateGameRequest("New Game"), "hehe"));
+        assertEquals("Server returned: 401 Unauthorized", exception.getMessage());
+    }
 
     @Test
     @Order(11)
     @DisplayName("joinGame (+)")
-    public void joinGamePositive() {}
+    public void joinGamePositive() throws CommunicationException {
+        String kermitAuth = facade.register(new RegisterRequest("kermit", "beinggreenisprettycoolngl",
+                "kermit@muppets.com")).authToken();
+        String fozzieAuth = facade.register(fozzieRRequest).authToken();
+        int gameID = facade.createGame(new CreateGameRequest("Muppet Showdown"), fozzieAuth).gameID();
+        facade.joinGame(new JoinGameRequest("WHITE", gameID), kermitAuth);
+        facade.joinGame(new JoinGameRequest("BLACK", gameID), fozzieAuth);
+        ListGameInfo muppetShowdownInfo = facade.listGames(kermitAuth).games().getFirst();
+        assertEquals(new ListGameInfo(1, "kermit", "fozzie", "Muppet Showdown"), muppetShowdownInfo);
+    }
 
     @Test
     @Order(12)
     @DisplayName("joinGame (-)")
-    public void joinGameNegative() {}
+    public void joinGameNegative() throws CommunicationException {
+        String fozzieAuth = facade.register(fozzieRRequest).authToken();
+        int gameID = facade.createGame(new CreateGameRequest("Geri's Game"), fozzieAuth).gameID();
+        CommunicationException exception = assertThrows(CommunicationException.class, () ->
+                facade.joinGame(new JoinGameRequest("GREEN", gameID), fozzieAuth));
+        assertEquals("Server returned: 400 Bad Request", exception.getMessage());
+    }
 
     @Test
     @Order(13)
@@ -135,7 +182,6 @@ public class ServerFacadeTests {
     @DisplayName("clear (-)")
     public void clearNegative() throws CommunicationException {
         String fozzieAuth = facade.register(fozzieRRequest).authToken();
-        facade.createGame(fozzieCGRequest, fozzieAuth);
         facade.clear();
         CommunicationException exception = assertThrows(CommunicationException.class, () -> facade.logout(fozzieAuth));
         assertEquals("Server returned: 401 Unauthorized", exception.getMessage());

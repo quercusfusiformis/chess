@@ -26,7 +26,7 @@ public class ServerFacade {
             String body = new Gson().toJson(request);
             HttpURLConnection connection = makeHTTPRequest(serverPort, urlStemLocal, "/user", "POST", body);
             if (!(hasGoodResponseCode(connection))) { throwResponseError(connection); }
-            else { response = getHTTPResponse(connection, RegisterResponse.class); }
+            else { response = getHTTPResponseBody(connection, RegisterResponse.class); }
         } catch (Exception ex) { throw new CommunicationException(ex.getMessage()); }
         return response;
     }
@@ -37,7 +37,7 @@ public class ServerFacade {
             String body = new Gson().toJson(request);
             HttpURLConnection connection = makeHTTPRequest(serverPort, urlStemLocal, "/session", "POST", body);
             if (!(hasGoodResponseCode(connection))) { throwResponseError(connection); }
-            else { response = getHTTPResponse(connection, LoginResponse.class); }
+            else { response = getHTTPResponseBody(connection, LoginResponse.class); }
         } catch (Exception ex) { throw new CommunicationException(ex.getMessage()); }
         return response;
     }
@@ -50,11 +50,11 @@ public class ServerFacade {
     }
 
     public ListGamesResponse listGames(String authToken) throws CommunicationException {
-        ListGamesResponse response = null;
+        ListGamesResponse response;
         try {
             HttpURLConnection connection = makeHTTPRequest(serverPort, urlStemLocal, "/game", "GET", "", authToken);
             if (!(hasGoodResponseCode(connection))) { throwResponseError(connection); }
-            response = getHTTPResponse(connection, ListGamesResponse.class);
+            response = getHTTPResponseBody(connection, ListGamesResponse.class);
         } catch (Exception ex) { throw new CommunicationException(ex.getMessage()); }
         return response;
     }
@@ -65,14 +65,15 @@ public class ServerFacade {
             String body = new Gson().toJson(request);
             HttpURLConnection connection = makeHTTPRequest(serverPort, urlStemLocal, "/game", "POST", body, authToken);
             if (!(hasGoodResponseCode(connection))) { throwResponseError(connection); }
-            else { response = getHTTPResponse(connection, CreateGameResponse.class); }
+            else { response = getHTTPResponseBody(connection, CreateGameResponse.class); }
         } catch (Exception ex) { throw new CommunicationException(ex.getMessage()); }
         return response;
     }
 
     public void joinGame(JoinGameRequest request, String authToken) throws CommunicationException {
         try {
-            HttpURLConnection connection = makeHTTPRequest(serverPort, urlStemLocal, "/game", "PUT", "", authToken);
+            String body = new Gson().toJson(request);
+            HttpURLConnection connection = makeHTTPRequest(serverPort, urlStemLocal, "/game", "PUT", body, authToken);
             if (!(hasGoodResponseCode(connection))) { throwResponseError(connection); }
         } catch (Exception ex) { throw new CommunicationException(ex.getMessage()); }
     }
@@ -110,14 +111,6 @@ public class ServerFacade {
         }
     }
 
-    private static <T> T getHTTPResponse(HttpURLConnection http, Class<T> clazz) throws IOException, CommunicationException {
-        int statusCode = http.getResponseCode();
-        String statusMessage = http.getResponseMessage();
-        if (statusCode == 200) {
-            return getHTTPResponseBody(http, clazz);
-        } else { throw new CommunicationException(statusCode + statusMessage); }
-    }
-
     private static boolean hasGoodResponseCode(HttpURLConnection http) throws IOException {
         return http.getResponseCode() == 200;
     }
@@ -127,7 +120,7 @@ public class ServerFacade {
     }
 
     private static <T> T getHTTPResponseBody(HttpURLConnection http, Class<T> clazz) throws IOException {
-        T responseBody = null;
+        T responseBody;
         try (InputStream inputStream = http.getInputStream()) {
             InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
             responseBody = new Gson().fromJson(inputStreamReader, clazz);
