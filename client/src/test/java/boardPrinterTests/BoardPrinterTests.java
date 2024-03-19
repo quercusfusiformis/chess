@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test;
 import ui.BoardPrinter;
 import chess.ChessGame;
 
-class BoardPrinterTest {
+class BoardPrinterTests {
     @BeforeEach
     void setUp() {}
 
