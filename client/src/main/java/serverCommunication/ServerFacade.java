@@ -25,7 +25,8 @@ public class ServerFacade {
         try {
             String body = new Gson().toJson(request);
             HttpURLConnection connection = makeHTTPRequest(serverPort, urlStemLocal, "/user", "POST", body);
-            response = getHTTPResponse(connection, RegisterResponse.class);
+            if (!(hasGoodResponseCode(connection))) { throwResponseError(connection); }
+            else { response = getHTTPResponse(connection, RegisterResponse.class); }
         } catch (Exception ex) { throw new CommunicationException(ex.getMessage()); }
         return response;
     }
@@ -35,7 +36,8 @@ public class ServerFacade {
         try {
             String body = new Gson().toJson(request);
             HttpURLConnection connection = makeHTTPRequest(serverPort, urlStemLocal, "/session", "POST", body);
-            response = getHTTPResponse(connection, LoginResponse.class);
+            if (!(hasGoodResponseCode(connection))) { throwResponseError(connection); }
+            else { response = getHTTPResponse(connection, LoginResponse.class); }
         } catch (Exception ex) { throw new CommunicationException(ex.getMessage()); }
         return response;
     }
@@ -43,6 +45,7 @@ public class ServerFacade {
     public void logout(String authToken) throws CommunicationException {
         try {
             HttpURLConnection connection = makeHTTPRequest(serverPort, urlStemLocal, "/session", "DELETE", "", authToken);
+            if (!(hasGoodResponseCode(connection))) { throwResponseError(connection); }
         } catch (Exception ex) { throw new CommunicationException(ex.getMessage()); }
     }
 
@@ -50,6 +53,7 @@ public class ServerFacade {
         ListGamesResponse response = null;
         try {
             HttpURLConnection connection = makeHTTPRequest(serverPort, urlStemLocal, "/game", "GET", "", authToken);
+            if (!(hasGoodResponseCode(connection))) { throwResponseError(connection); }
             response = getHTTPResponse(connection, ListGamesResponse.class);
         } catch (Exception ex) { throw new CommunicationException(ex.getMessage()); }
         return response;
@@ -60,7 +64,8 @@ public class ServerFacade {
         try {
             String body = new Gson().toJson(request);
             HttpURLConnection connection = makeHTTPRequest(serverPort, urlStemLocal, "/game", "POST", body, authToken);
-            response = getHTTPResponse(connection, CreateGameResponse.class);
+            if (!(hasGoodResponseCode(connection))) { throwResponseError(connection); }
+            else { response = getHTTPResponse(connection, CreateGameResponse.class); }
         } catch (Exception ex) { throw new CommunicationException(ex.getMessage()); }
         return response;
     }
@@ -68,12 +73,14 @@ public class ServerFacade {
     public void joinGame(JoinGameRequest request, String authToken) throws CommunicationException {
         try {
             HttpURLConnection connection = makeHTTPRequest(serverPort, urlStemLocal, "/game", "PUT", "", authToken);
+            if (!(hasGoodResponseCode(connection))) { throwResponseError(connection); }
         } catch (Exception ex) { throw new CommunicationException(ex.getMessage()); }
     }
 
     public void clear() throws CommunicationException {
         try {
             HttpURLConnection connection = makeHTTPRequest(serverPort, urlStemLocal, "/db", "DELETE", "");
+            if (!(hasGoodResponseCode(connection))) { throwResponseError(connection); }
         } catch (Exception ex) { throw new CommunicationException(ex.getMessage()); }
     }
 
@@ -103,10 +110,20 @@ public class ServerFacade {
         }
     }
 
-    private static <T> T getHTTPResponse(HttpURLConnection http, Class<T> clazz) throws IOException {
+    private static <T> T getHTTPResponse(HttpURLConnection http, Class<T> clazz) throws IOException, CommunicationException {
         int statusCode = http.getResponseCode();
         String statusMessage = http.getResponseMessage();
-        return getHTTPResponseBody(http, clazz);
+        if (statusCode == 200) {
+            return getHTTPResponseBody(http, clazz);
+        } else { throw new CommunicationException(statusCode + statusMessage); }
+    }
+
+    private static boolean hasGoodResponseCode(HttpURLConnection http) throws IOException {
+        return http.getResponseCode() == 200;
+    }
+
+    private static void throwResponseError(HttpURLConnection http) throws IOException, CommunicationException {
+        throw new CommunicationException("Server returned: " + http.getResponseCode() + " " + http.getResponseMessage());
     }
 
     private static <T> T getHTTPResponseBody(HttpURLConnection http, Class<T> clazz) throws IOException {
