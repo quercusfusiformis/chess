@@ -7,6 +7,7 @@ import chess.ChessGame;
 import chess.ChessBoard;
 import chess.ChessPiece;
 import chess.ChessPosition;
+import com.google.gson.Gson;
 
 public class BoardPrinter {
     public static ChessBoard defaultBoard = new ChessBoard();
@@ -120,5 +121,10 @@ public class BoardPrinter {
             default -> pieceString = CHESSSPACE;
         }
         out.print(pieceString);
+    }
+
+    public static ChessBoard getBoardFromSerializedGame(String gameString) {
+        ChessGame gameReal = new Gson().fromJson(gameString, ChessGame.class);
+        return gameReal.getBoard();
     }
 }

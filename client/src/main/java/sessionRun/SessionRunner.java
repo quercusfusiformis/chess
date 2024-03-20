@@ -8,6 +8,7 @@ import requestRecords.*;
 import responseRecords.*;
 import serverCommunication.ServerFacade;
 import serverCommunication.CommunicationException;
+import ui.BoardPrinter;
 
 public class SessionRunner {
     private final ServerFacade server = new ServerFacade(3676);
@@ -39,8 +40,8 @@ public class SessionRunner {
         String printString = String.format("""
                 
                 %s OPTIONS:
-                    register <username> <password> <email> - creates an account and logs you in
-                    login <username> <password> - logs you in
+                    register <username> <password> <email> - creates an account and logs user in
+                    login <username> <password> - logs user in
                     quit - quits program
                     help - lists available commands
                 
@@ -54,7 +55,7 @@ public class SessionRunner {
             %s OPTIONS:
                 list - lists available games
                 create <name> - creates a game
-                join <ID> <WHITE|BLACK> - joins a specificed game as the chosen color
+                join <ID> <WHITE|BLACK> - joins a specified game as the chosen color
                 observe <ID> - joins a specified game as an observer
                 logout - logs you out
                 quit - quits program
@@ -84,15 +85,20 @@ public class SessionRunner {
     private void parseCommands(ArrayList<String> userInput) {
         String unrecognizedCommandString = "Unrecognized command. Type help to list available commands.\n";
         if (!userInput.isEmpty()) {
+            ArrayList<String> validCommands = new ArrayList<>(Arrays.asList("register", "login", "list", "create",
+                    "join", "observe", "logout", "quit", "help"));
             String firstCommand = userInput.getFirst().toLowerCase();
             if (firstCommand.isEmpty()) { return; }
+            else if (!validCommands.contains(firstCommand)) {
+                System.out.print(unrecognizedCommandString);
+                return;
+            }
             ArrayList<String> userArgs;
             userArgs = userInput;
             userArgs.removeFirst();
             ArrayList<String> validate;
             // Unauthorized and authorized options
             try {
-                String bull = null;
                 boolean invalidInput = false;
                 if (!userAuthorized) {
                     switch (firstCommand) {
@@ -118,8 +124,16 @@ public class SessionRunner {
                             if (isValidInput(userArgs, validate)) { create(userArgs);
                             } else { invalidInput = true; }
                         }
-                        case "join" -> bull = null;
-                        case "observe" -> bull = null;
+                        case "join" -> {
+                            validate = new ArrayList<>(Arrays.asList("int", "str"));
+                            if (isValidInput(userArgs, validate)) { join(userArgs);
+                            } else { invalidInput = true; }
+                        }
+                        case "observe" -> {
+                            validate = new ArrayList<>(List.of("int"));
+                            if (isValidInput(userArgs, validate)) { observe(userArgs);
+                            } else { invalidInput = true; }
+                        }
                         case "logout" -> {
                             if (userArgs.isEmpty()) { logout();
                             } else { invalidInput = true; }
@@ -196,12 +210,25 @@ public class SessionRunner {
 
     private void create(ArrayList<String> userArgs) throws CommunicationException {
         CreateGameResponse response = server.createGame(new CreateGameRequest(userArgs.getFirst()), this.userAuthToken);
-        System.out.print("New game \"" + userArgs.getFirst() + "\" created with ID:" + response.gameID() + "\n");
+        System.out.print("New game \"" + userArgs.getFirst() + "\" created with ID: " + response.gameID() + "\n");
     }
 
-    private void join(ArrayList<String> userArgs) throws CommunicationException {}
+    private void join(ArrayList<String> userArgs) throws CommunicationException {
+        String color;
+        if (userArgs.get(1) != null) { color = userArgs.get(1).toUpperCase();
+        } else { color = null; }
+        int gameID = Integer.parseInt(userArgs.get(0));
+        server.joinGame(new JoinGameRequest(color, gameID), this.userAuthToken);
+        GetGameResponse response = server.getGame(new GetGameRequest(gameID), this.userAuthToken);
+        System.out.print("Game: " + response.gameName() + "\n");
+        BoardPrinter.printBoardAll(BoardPrinter.getBoardFromSerializedGame(response.game()));
+        System.out.print("White Player: " + response.whiteUsername() + "\n");
+        System.out.print("Black Player: " + response.blackUsername() + "\n");
+    }
 
-    private void observe(ArrayList<String> userArgs) throws CommunicationException {}
+    private void observe(ArrayList<String> userArgs) throws CommunicationException {
+        join(new ArrayList<>(Arrays.asList(userArgs.getFirst(), null)));
+    }
 
     private void logout() throws CommunicationException {
         server.logout(this.userAuthToken);
