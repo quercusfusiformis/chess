@@ -4,8 +4,13 @@ import java.util.*;
 import java.io.InputStreamReader;
 import java.io.BufferedReader;
 import java.io.IOException;
+import requestRecords.*;
+import responseRecords.*;
+import serverCommunication.ServerFacade;
+import serverCommunication.CommunicationException;
 
 public class SessionRunner {
+    private final ServerFacade server = new ServerFacade(3676);
     private boolean userAuthorized = false;
     private String userAuthToken;
     private boolean running = true;
@@ -24,37 +29,43 @@ public class SessionRunner {
 
             ArrayList<String> userInput = new ArrayList<>();
             try { userInput = (ArrayList<String>) promptUserForInput();
-            } catch (IOException ex) { System.out.print("An error occured. Please try again"); }
+            } catch (IOException ex) { System.out.print("An error occurred. Please try again"); }
 
             parseCommands(userInput);
         }
     }
 
-    private static void printLoggedOutMenu() {
-        String printString = """
-                \nOPTIONS:
+    private void printLoggedOutMenu() {
+        String printString = String.format("""
+                
+                %s OPTIONS:
                     register <username> <password> <email> - creates an account and logs you in
                     login <username> <password> - logs you in
                     quit - quits program
-                    help - lists available commands""";
+                    help - lists available commands
+                
+                """, getUserAuthStatusAsString(this.userAuthorized));
         System.out.print(printString);
     }
 
-    private static void printLoggedInMenu() {
-        String printString = """
-                \nOPTIONS:
+    private void printLoggedInMenu() {
+        String printString = String.format("""
+                
+                %s OPTIONS:
                     list - lists available games
                     create <name> - creates a game
                     join <ID> <WHITE|BLACK> - joins a specificed game as the chosen color
                     observe <ID> - joins a specified game as an observer
                     logout - logs you out
                     quit - quits program
-                    help - lists available commands""";
+                    help - lists available commands
+                    
+                    """, getUserAuthStatusAsString(this.userAuthorized));
         System.out.print(printString);
     }
 
     private Collection<String> promptUserForInput() throws IOException {
-        System.out.print("\n\n" + getPrompt());
+        System.out.print(getPrompt());
         return getUserInput();
     }
 
@@ -72,18 +83,110 @@ public class SessionRunner {
     }
 
     private void parseCommands(ArrayList<String> userInput) {
+        String unrecognizedCommandString = "Unrecognized command. Type help to list available commands.\n";
         if (!userInput.isEmpty()) {
             String firstCommand = userInput.getFirst().toLowerCase();
+            if (firstCommand.isEmpty()) { return; }
+            userInput.removeFirst();
+            ArrayList<String> userArgs;
+            userArgs = userInput;
             // Unauthorized and authorized options
-            if (!userAuthorized) {
-
-            } else {
-
+            try {
+                String bull = null;
+                boolean invalidInput = false;
+                if (!userAuthorized) {
+                    switch (firstCommand) {
+                        case "register" -> {
+                            ArrayList<String> validate = new ArrayList<>(Arrays.asList("str", "str", "str"));
+                            if (isValidInput(userArgs, validate)) {
+                                register(userArgs);
+                            } else { invalidInput = true; }
+                        }
+                        case "login" -> {
+                            ArrayList<String> validate = new ArrayList<>(Arrays.asList("str", "str"));
+                            if (isValidInput(userArgs, validate)) {
+                                login(userArgs);
+                            } else { invalidInput = true; }
+                        }
+                    }
+                } else {
+                    switch (firstCommand) {
+                        case "list" -> bull = null;
+                        case "create" -> bull = null;
+                        case "join" -> bull = null;
+                        case "observe" -> bull = null;
+                        case "logout" -> {
+                            if (userArgs.isEmpty()) {
+                                logout();
+                            } else { invalidInput = true; }
+                        }
+                    }
+                }
+                // Always-available options
+                switch (firstCommand) {
+                    case "quit" -> {
+                        if (this.userAuthorized) { logout(); }
+                        this.running = false;
+                    }
+                    case "help" -> {
+                        if (!this.userAuthorized) { printLoggedOutMenu();
+                        } else { printLoggedInMenu(); }
+                    }
+                }
+                if (invalidInput) {
+                    System.out.print("Invalid command input. Type help and format your command according to the menu.\n");
+                }
+            } catch (CommunicationException ex) {
+                System.out.print("An error occurred while communicating with the server: " + ex.getMessage() + "\n");
             }
-            // Always-available options
-            switch (firstCommand) {
+        } else { System.out.print(unrecognizedCommandString); }
+    }
 
+    private boolean isValidInput(ArrayList<String> userInput, ArrayList<String> validTypes) {
+        if (userInput.size() != validTypes.size()) { return false; }
+        boolean isValidInput = true;
+        for (int i = 0; i < validTypes.size(); i++) {
+            String input = userInput.get(i);
+            String type = validTypes.get(i);
+            switch(type) {
+                case "str" -> isValidInput = isValidInput && !isNumeric(input) && !input.isEmpty();
+                case "int" -> isValidInput = isValidInput && isNumeric(input);
             }
-        } else { System.out.print("\nUnrecognized command. Type help to view available commands."); }
+        }
+        return isValidInput;
+    }
+
+    private static boolean isNumeric(String str) {
+        try {
+            Integer.valueOf(str);
+            return true;
+        } catch (NumberFormatException ex) { return false; }
+    }
+
+    private void register(ArrayList<String> userArgs) throws CommunicationException {
+        RegisterResponse rResponse = server.register(
+                new RegisterRequest(userArgs.get(0), userArgs.get(1), userArgs.get(2)));
+        System.out.print("Registered user " + rResponse.username() + ".\n");
+        login(new ArrayList<>(Arrays.asList(userArgs.get(0), userArgs.get(1))));
+    }
+
+    private void login(ArrayList<String> userArgs) throws CommunicationException {
+        LoginResponse lResponse = server.login(
+                new LoginRequest(userArgs.get(0), userArgs.get(1)));
+        setAuthorization(lResponse.authToken());
+        System.out.print("Logged in user " + lResponse.username() + ".\n");
+    }
+
+    private void logout() throws CommunicationException {
+        server.logout(this.userAuthToken);
+        setAuthorization(null);
+        System.out.print("Logged out.\n");
+    }
+
+    private void setAuthorization(String authToken) {
+        this.userAuthToken = authToken;
+        this.userAuthorized = (authToken != null);
+        if (this.userAuthorized) { this.printLoggedInMenu = true;
+        } else { this.printLoggedOutMenu = true; }
     }
 }
