@@ -50,17 +50,17 @@ public class SessionRunner {
 
     private void printLoggedInMenu() {
         String printString = String.format("""
-                
-                %s OPTIONS:
-                    list - lists available games
-                    create <name> - creates a game
-                    join <ID> <WHITE|BLACK> - joins a specificed game as the chosen color
-                    observe <ID> - joins a specified game as an observer
-                    logout - logs you out
-                    quit - quits program
-                    help - lists available commands
-                    
-                    """, getUserAuthStatusAsString(this.userAuthorized));
+            
+            %s OPTIONS:
+                list - lists available games
+                create <name> - creates a game
+                join <ID> <WHITE|BLACK> - joins a specificed game as the chosen color
+                observe <ID> - joins a specified game as an observer
+                logout - logs you out
+                quit - quits program
+                help - lists available commands
+            
+            """, getUserAuthStatusAsString(this.userAuthorized));
         System.out.print(printString);
     }
 
@@ -78,8 +78,7 @@ public class SessionRunner {
 
     private static Collection<String> getUserInput() throws IOException {
         BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
-        return new ArrayList<>(List.of(reader.readLine().split(" "))) {
-        };
+        return new ArrayList<>(List.of(reader.readLine().split(" ")));
     }
 
     private void parseCommands(ArrayList<String> userInput) {
@@ -87,9 +86,10 @@ public class SessionRunner {
         if (!userInput.isEmpty()) {
             String firstCommand = userInput.getFirst().toLowerCase();
             if (firstCommand.isEmpty()) { return; }
-            userInput.removeFirst();
             ArrayList<String> userArgs;
             userArgs = userInput;
+            userArgs.removeFirst();
+            ArrayList<String> validate;
             // Unauthorized and authorized options
             try {
                 String bull = null;
@@ -97,27 +97,31 @@ public class SessionRunner {
                 if (!userAuthorized) {
                     switch (firstCommand) {
                         case "register" -> {
-                            ArrayList<String> validate = new ArrayList<>(Arrays.asList("str", "str", "str"));
-                            if (isValidInput(userArgs, validate)) {
-                                register(userArgs);
+                            validate = new ArrayList<>(Arrays.asList("str", "str", "str"));
+                            if (isValidInput(userArgs, validate)) { register(userArgs);
                             } else { invalidInput = true; }
                         }
                         case "login" -> {
-                            ArrayList<String> validate = new ArrayList<>(Arrays.asList("str", "str"));
-                            if (isValidInput(userArgs, validate)) {
-                                login(userArgs);
+                            validate = new ArrayList<>(Arrays.asList("str", "str"));
+                            if (isValidInput(userArgs, validate)) { login(userArgs);
                             } else { invalidInput = true; }
                         }
                     }
                 } else {
                     switch (firstCommand) {
-                        case "list" -> bull = null;
-                        case "create" -> bull = null;
+                        case "list" -> {
+                            if (userArgs.isEmpty()) { list();
+                            } else { invalidInput = true; }
+                        }
+                        case "create" -> {
+                            validate = new ArrayList<>(List.of("str"));
+                            if (isValidInput(userArgs, validate)) { create(userArgs);
+                            } else { invalidInput = true; }
+                        }
                         case "join" -> bull = null;
                         case "observe" -> bull = null;
                         case "logout" -> {
-                            if (userArgs.isEmpty()) {
-                                logout();
+                            if (userArgs.isEmpty()) { logout();
                             } else { invalidInput = true; }
                         }
                     }
@@ -125,12 +129,12 @@ public class SessionRunner {
                 // Always-available options
                 switch (firstCommand) {
                     case "quit" -> {
-                        if (this.userAuthorized) { logout(); }
-                        this.running = false;
+                        if (userArgs.isEmpty()) { quit();
+                        } else { invalidInput = true; }
                     }
                     case "help" -> {
-                        if (!this.userAuthorized) { printLoggedOutMenu();
-                        } else { printLoggedInMenu(); }
+                        if (userArgs.isEmpty()) { help();
+                        } else { invalidInput = true; }
                     }
                 }
                 if (invalidInput) {
@@ -177,10 +181,43 @@ public class SessionRunner {
         System.out.print("Logged in user " + lResponse.username() + ".\n");
     }
 
+    private void list() throws CommunicationException {
+        ListGamesResponse response = server.listGames(this.userAuthToken);
+        System.out.print("\nCURRENT GAMES:\n");
+        System.out.print("    Game Name | Game ID | White Player Username | Black Player Username\n");
+        for(ListGameInfo gameInfo: response.games()) {
+            System.out.print("    " + gameInfo.gameName() + " | " +
+                    gameInfo.gameID() + " | " +
+                    gameInfo.whiteUsername() + " | " +
+                    gameInfo.blackUsername() + "\n");
+        }
+        System.out.print("\n");
+    }
+
+    private void create(ArrayList<String> userArgs) throws CommunicationException {
+        CreateGameResponse response = server.createGame(new CreateGameRequest(userArgs.getFirst()), this.userAuthToken);
+        System.out.print("New game \"" + userArgs.getFirst() + "\" created with ID:" + response.gameID() + "\n");
+    }
+
+    private void join(ArrayList<String> userArgs) throws CommunicationException {}
+
+    private void observe(ArrayList<String> userArgs) throws CommunicationException {}
+
     private void logout() throws CommunicationException {
         server.logout(this.userAuthToken);
         setAuthorization(null);
         System.out.print("Logged out.\n");
+    }
+
+    private void quit() throws CommunicationException {
+        if (this.userAuthorized) { logout(); }
+        System.out.print("Quitting...\n\n");
+        this.running = false;
+    }
+
+    private void help() {
+        if (!this.userAuthorized) { printLoggedOutMenu();
+        } else { printLoggedInMenu(); }
     }
 
     private void setAuthorization(String authToken) {
