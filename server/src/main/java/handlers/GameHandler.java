@@ -1,8 +1,6 @@
 package handlers;
 
 import com.google.gson.Gson;
-import requestRecords.GetGameRequest;
-import responseRecords.GetGameResponse;
 import spark.*;
 import service.GameService;
 import requestRecords.CreateGameRequest;
@@ -68,29 +66,6 @@ public class GameHandler extends ServiceHandler {
                 case "Error: bad request" -> this.response.status(400);
                 case "Error: unauthorized" -> this.response.status(401);
                 case "Error: already taken" -> this.response.status(403);
-                default -> this.response.status(418);
-            }
-        } catch (Exception ex) {
-            body = new Gson().toJson(new ServerResponse(ex.getMessage()));
-            this.response.status(500);
-        }
-        this.response.type("application/json");
-        return body;
-    }
-
-    public Object getGame() {
-        String body;
-        String authToken = this.request.headers("authorization");
-        GetGameRequest ggRequest = getBody(this.request, GetGameRequest.class);
-        try {
-            GetGameResponse ggResponse = this.service.getGame(ggRequest, authToken);
-            body = new Gson().toJson(ggResponse);
-            this.response.status(200);
-        } catch (DataAccessException ex) {
-            body = new Gson().toJson(new ServerResponse(ex.getMessage()));
-            switch (ex.getMessage()) {
-                case "Error: bad request" -> this.response.status(400);
-                case "Error: unauthorized" -> this.response.status(401);
                 default -> this.response.status(418);
             }
         } catch (Exception ex) {

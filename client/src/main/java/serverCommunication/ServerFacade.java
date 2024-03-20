@@ -78,17 +78,6 @@ public class ServerFacade {
         } catch (Exception ex) { throw new CommunicationException(ex.getMessage()); }
     }
 
-    public GetGameResponse getGame(GetGameRequest request, String authToken) throws CommunicationException {
-        GetGameResponse response = null;
-        try {
-            String body = new Gson().toJson(request);
-            HttpURLConnection connection = makeHTTPRequest(serverPort, urlStemLocal, "/", "GET", body, authToken);
-            if (!(hasGoodResponseCode(connection))) { throwResponseError(connection); }
-            else { response = getHTTPResponseBody(connection, GetGameResponse.class); }
-        } catch (Exception ex) { throw new CommunicationException(ex.getMessage()); }
-        return response;
-    }
-
     public void clear() throws CommunicationException {
         try {
             HttpURLConnection connection = makeHTTPRequest(serverPort, urlStemLocal, "/db", "DELETE", "");

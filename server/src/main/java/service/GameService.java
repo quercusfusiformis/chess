@@ -3,9 +3,7 @@ package service;
 import java.util.ArrayList;
 import model.GameData;
 import requestRecords.CreateGameRequest;
-import requestRecords.GetGameRequest;
 import requestRecords.JoinGameRequest;
-import responseRecords.GetGameResponse;
 import responseRecords.ListGamesResponse;
 import responseRecords.ListGameInfo;
 import responseRecords.CreateGameResponse;
@@ -52,28 +50,6 @@ public class GameService {
                     }
                 }
                 // If playerColor is null, you do nothing for phase 3? Specs don't give a place to store observers
-            }
-            else {
-                throw new DataAccessException("Error: bad request");
-            }
-        }
-        else {
-            throw new DataAccessException("Error: unauthorized");
-        }
-    }
-
-    public GetGameResponse getGame(GetGameRequest ggRequest, String authToken) throws DataAccessException {
-        if (authDAO.authExists(authToken)) {
-            if (gameDAO.gameExists(ggRequest.gameID())) {
-                GameData game;
-                try {
-                    game = gameDAO.getGame(ggRequest.gameID());
-                } catch (DataAccessException ex) { throw new DataAccessException("Error: bad request"); }
-                return new GetGameResponse(game.gameID(),
-                        game.whiteUsername(),
-                        game.blackUsername(),
-                        game.gameName(),
-                        game.game());
             }
             else {
                 throw new DataAccessException("Error: bad request");

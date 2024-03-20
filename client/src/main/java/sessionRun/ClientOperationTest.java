@@ -17,6 +17,7 @@ class ClientOperationTest {
         setUp();
         clearDatabase();
         client.run();
+        clearDatabase();
         tearDown();
     }
 

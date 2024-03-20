@@ -7,7 +7,6 @@ import chess.ChessGame;
 import chess.ChessBoard;
 import chess.ChessPiece;
 import chess.ChessPosition;
-import com.google.gson.Gson;
 
 public class BoardPrinter {
     public static ChessBoard defaultBoard = new ChessBoard();
@@ -15,6 +14,13 @@ public class BoardPrinter {
         defaultBoard.resetBoard();
     }
 
+    public static ChessBoard getADefaultBoard() { return defaultBoard; }
+
+    private static final String originalTextColor = SET_TEXT_COLOR_WHITE;
+    private static final String originalBackgroundColor = SET_BG_COLOR_BLACK;
+    private static final String whitePieceColor = SET_TEXT_COLOR_WHITE;
+    private static final String blackPieceColor = SET_TEXT_COLOR_BLACK;
+    private static final String indexColor = SET_TEXT_COLOR_BLACK;
     private static final String boardEdgeColor = SET_BG_COLOR_BROWN;
     private static final String boardSpaceWhiteColor = SET_BG_COLOR_LIGHT_GREY;
     private static final String boardSpaceBlackColor = SET_BG_COLOR_DARK_GREY;
@@ -46,7 +52,7 @@ public class BoardPrinter {
         ChessGame.TeamColor currSpaceColor;
         for(int i: rowOrder) {
             out.print(boardEdgeColor);
-            out.print(SET_TEXT_COLOR_BLACK);
+            out.print(indexColor);
             printCharWithSpacing(out, String.valueOf(i));
             if (i % 2 == spaceColorDesignator) { currSpaceColor = ChessGame.TeamColor.WHITE; }
             else { currSpaceColor = ChessGame.TeamColor.BLACK; }
@@ -64,17 +70,19 @@ public class BoardPrinter {
             }
             out.print(boardEdgeColor);
             out.print(CHESSSPACE);
-            out.print(RESET_BG_COLOR);
+            out.print(originalBackgroundColor);
             out.print(System.lineSeparator());
         }
         printFooter(out);
+        out.print(originalTextColor);
+        out.print(originalBackgroundColor);
     }
 
     private static void printHeader(PrintStream out, ChessGame.TeamColor callerColor) {
         String [] headerOrder;
         out.print(boardEdgeColor);
         out.print(CHESSSPACE);
-        out.print(SET_TEXT_COLOR_BLACK);
+        out.print(indexColor);
         if (callerColor == ChessGame.TeamColor.WHITE) {
             headerOrder = new String[]{"a", "b", "c", "d", "e", "f", "g", "h"};
         } else { headerOrder = new String [] {"h", "g", "f", "e", "d", "c", "b", "a"}; }
@@ -82,7 +90,8 @@ public class BoardPrinter {
             printCharWithSpacing(out, headerLetter);
         }
         out.print(CHESSSPACE);
-        out.print(RESET_BG_COLOR);
+        out.print(originalTextColor);
+        out.print(originalBackgroundColor);
         out.print(System.lineSeparator());
     }
 
@@ -93,7 +102,7 @@ public class BoardPrinter {
     private static void printBlankFullRow(PrintStream out, String color) {
         out.print(color);
         for (int i = 0; i <= 9; i++) { out.print(CHESSSPACE); }
-        out.print(RESET_BG_COLOR);
+        out.print(originalBackgroundColor);
         out.print(System.lineSeparator());
     }
 
@@ -104,8 +113,8 @@ public class BoardPrinter {
     }
 
     private static void printPiece(PrintStream out, ChessPiece.PieceType piece, ChessGame.TeamColor color) {
-        if (color == ChessGame.TeamColor.WHITE) { out.print(SET_TEXT_COLOR_WHITE); }
-        else { out.print(SET_TEXT_COLOR_BLACK); }
+        if (color == ChessGame.TeamColor.WHITE) { out.print(whitePieceColor); }
+        else { out.print(blackPieceColor); }
         printPieceIcon(out, piece);
     }
 
@@ -121,10 +130,5 @@ public class BoardPrinter {
             default -> pieceString = CHESSSPACE;
         }
         out.print(pieceString);
-    }
-
-    public static ChessBoard getBoardFromSerializedGame(String gameString) {
-        ChessGame gameReal = new Gson().fromJson(gameString, ChessGame.class);
-        return gameReal.getBoard();
     }
 }
