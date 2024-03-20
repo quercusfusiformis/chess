@@ -7,19 +7,50 @@ import java.io.IOException;
 
 public class SessionRunner {
     private boolean userAuthorized = false;
+    private String userAuthToken;
+    private boolean running = true;
+    private boolean printLoggedOutMenu = true;
+    private boolean printLoggedInMenu = false;
 
     public void run() {
-        boolean running = true;
-        while (running) {
+        while (this.running) {
+            if (this.printLoggedOutMenu) {
+                printLoggedOutMenu();
+                this.printLoggedOutMenu = false;
+            } else if (this.printLoggedInMenu) {
+                printLoggedInMenu();
+                this.printLoggedInMenu = false;
+            }
+
             ArrayList<String> userInput = new ArrayList<>();
             try { userInput = (ArrayList<String>) promptUserForInput();
             } catch (IOException ex) { System.out.print("An error occured. Please try again"); }
 
-            if (userInput.size() == 1 && userInput.getFirst().equalsIgnoreCase("quit")) { running = false; }
-            else {
-                System.out.print("You entered words, huh:" + userInput);
-            }
+            parseCommands(userInput);
         }
+    }
+
+    private static void printLoggedOutMenu() {
+        String printString = """
+                \nOPTIONS:
+                    register <username> <password> <email> - creates an account and logs you in
+                    login <username> <password> - logs you in
+                    quit - quits program
+                    help - lists available commands""";
+        System.out.print(printString);
+    }
+
+    private static void printLoggedInMenu() {
+        String printString = """
+                \nOPTIONS:
+                    list - lists available games
+                    create <name> - creates a game
+                    join <ID> <WHITE|BLACK> - joins a specificed game as the chosen color
+                    observe <ID> - joins a specified game as an observer
+                    logout - logs you out
+                    quit - quits program
+                    help - lists available commands""";
+        System.out.print(printString);
     }
 
     private Collection<String> promptUserForInput() throws IOException {
@@ -38,5 +69,21 @@ public class SessionRunner {
         BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
         return new ArrayList<>(List.of(reader.readLine().split(" "))) {
         };
+    }
+
+    private void parseCommands(ArrayList<String> userInput) {
+        if (!userInput.isEmpty()) {
+            String firstCommand = userInput.getFirst().toLowerCase();
+            // Unauthorized and authorized options
+            if (!userAuthorized) {
+
+            } else {
+
+            }
+            // Always-available options
+            switch (firstCommand) {
+
+            }
+        } else { System.out.print("\nUnrecognized command. Type help to view available commands."); }
     }
 }
