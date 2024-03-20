@@ -4,7 +4,6 @@ import java.util.*;
 import java.io.InputStreamReader;
 import java.io.BufferedReader;
 import java.io.IOException;
-import chess.ChessGame;
 import requestRecords.*;
 import responseRecords.*;
 import serverCommunication.ServerFacade;
@@ -222,12 +221,8 @@ public class SessionRunner {
         server.joinGame(new JoinGameRequest(color, gameID), this.userAuthToken);
         // Default board printing for phase 5
         //     Actual implementation will be done via websockets in phase 6
-        System.out.print("Game: " + gameID + "\n");
-        if (color != null) {
-            if (color.equals("WHITE")) {
-                BoardPrinter.printBoard(BoardPrinter.getADefaultBoard(), ChessGame.TeamColor.WHITE);
-            } else { BoardPrinter.printBoard(BoardPrinter.getADefaultBoard(), ChessGame.TeamColor.BLACK); }
-        } else { BoardPrinter.printBoardAll(BoardPrinter.getADefaultBoard()); }
+        System.out.print("GameID: " + gameID + "\n");
+        BoardPrinter.printBoardAll(BoardPrinter.getADefaultBoard());
     }
 
     private void observe(ArrayList<String> userArgs) throws CommunicationException {
