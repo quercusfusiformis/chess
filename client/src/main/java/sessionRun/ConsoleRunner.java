@@ -10,7 +10,7 @@ import serverCommunication.ServerFacade;
 import serverCommunication.CommunicationException;
 import ui.BoardPrinter;
 
-public class SessionRunner {
+public class ConsoleRunner {
     private final ServerFacade server = new ServerFacade(3676);
     private boolean userAuthorized = false;
     private String userAuthToken;

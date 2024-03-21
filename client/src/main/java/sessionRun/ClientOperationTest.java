@@ -7,7 +7,7 @@ import dataAccess.DataAccessException;
 class ClientOperationTest {
     private static final Server server = new Server();
     private static final DatabaseOperationsService dbOpsService = new DatabaseOperationsService();
-    private static final SessionRunner client = new SessionRunner();
+    private static final ConsoleRunner client = new ConsoleRunner();
 
     private static void setUp() { server.run(3676); }
 
