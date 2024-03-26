@@ -9,12 +9,12 @@ import chess.ChessPiece;
 import chess.ChessPosition;
 
 public class BoardPrinter {
-    public static ChessBoard defaultBoard = new ChessBoard();
-    static {
-        defaultBoard.resetBoard();
-    }
 
-    public static ChessBoard getADefaultBoard() { return defaultBoard; }
+    public static ChessBoard getADefaultBoard() {
+        ChessBoard defaultBoard = new ChessBoard();
+        defaultBoard.resetBoard();
+        return defaultBoard;
+    }
 
     private static final String originalTextColor = SET_TEXT_COLOR_WHITE;
     private static final String originalBackgroundColor = SET_BG_COLOR_BLACK;
@@ -34,7 +34,30 @@ public class BoardPrinter {
 
     public static void printBoard(ChessBoard board, ChessGame.TeamColor callerColor) {
         PrintStream out = new PrintStream(System.out, true, StandardCharsets.UTF_8);
+        printHeader(out, callerColor);
+        printBoardRows(out, board, callerColor);
+        printFooter(out);
+        resetTerminalColors(out);
+    }
 
+    private static void printHeader(PrintStream out, ChessGame.TeamColor callerColor) {
+        String [] headerOrder;
+        out.print(boardEdgeColor);
+        out.print(CHESSSPACE);
+        out.print(indexColor);
+        if (callerColor == ChessGame.TeamColor.WHITE) {
+            headerOrder = new String[]{"a", "b", "c", "d", "e", "f", "g", "h"};
+        } else { headerOrder = new String [] {"h", "g", "f", "e", "d", "c", "b", "a"}; }
+        for (String headerLetter: headerOrder) {
+            printCharWithSpacing(out, headerLetter);
+        }
+        out.print(CHESSSPACE);
+        out.print(originalTextColor);
+        out.print(originalBackgroundColor);
+        out.print(System.lineSeparator());
+    }
+
+    private static void printBoardRows(PrintStream out, ChessBoard board, ChessGame.TeamColor callerColor) {
         int spaceColorDesignator;
         int [] rowOrder;
         int [] colOrder;
@@ -48,7 +71,6 @@ public class BoardPrinter {
             colOrder = new int [] {8,7,6,5,4,3,2,1};
         }
 
-        printHeader(out, callerColor);
         ChessGame.TeamColor currSpaceColor;
         for(int i: rowOrder) {
             out.print(boardEdgeColor);
@@ -73,26 +95,6 @@ public class BoardPrinter {
             out.print(originalBackgroundColor);
             out.print(System.lineSeparator());
         }
-        printFooter(out);
-        out.print(originalTextColor);
-        out.print(originalBackgroundColor);
-    }
-
-    private static void printHeader(PrintStream out, ChessGame.TeamColor callerColor) {
-        String [] headerOrder;
-        out.print(boardEdgeColor);
-        out.print(CHESSSPACE);
-        out.print(indexColor);
-        if (callerColor == ChessGame.TeamColor.WHITE) {
-            headerOrder = new String[]{"a", "b", "c", "d", "e", "f", "g", "h"};
-        } else { headerOrder = new String [] {"h", "g", "f", "e", "d", "c", "b", "a"}; }
-        for (String headerLetter: headerOrder) {
-            printCharWithSpacing(out, headerLetter);
-        }
-        out.print(CHESSSPACE);
-        out.print(originalTextColor);
-        out.print(originalBackgroundColor);
-        out.print(System.lineSeparator());
     }
 
     private static void printFooter(PrintStream out) {
@@ -130,5 +132,10 @@ public class BoardPrinter {
             default -> pieceString = CHESSSPACE;
         }
         out.print(pieceString);
+    }
+
+    private static void resetTerminalColors(PrintStream out) {
+        out.print(originalTextColor);
+        out.print(originalBackgroundColor);
     }
 }
