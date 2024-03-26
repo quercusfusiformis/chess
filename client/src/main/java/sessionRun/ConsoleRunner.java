@@ -17,6 +17,7 @@ public class ConsoleRunner {
     private boolean running = true;
     private boolean printLoggedOutMenu = true;
     private boolean printLoggedInMenu = false;
+    private final HashMap<Integer, Integer> gameListIDMap = new HashMap<>();
 
     public void run() {
         while (this.running) {
@@ -197,27 +198,30 @@ public class ConsoleRunner {
 
     private void list() throws CommunicationException {
         ListGamesResponse response = server.listGames(this.userAuthToken);
+        this.gameListIDMap.clear();
         System.out.print("\nCURRENT GAMES:\n");
-        System.out.print("    Game Name | Game ID | White Player Username | Black Player Username\n");
-        for(ListGameInfo gameInfo: response.games()) {
-            System.out.print("    " + gameInfo.gameName() + " | " +
-                    gameInfo.gameID() + " | " +
-                    gameInfo.whiteUsername() + " | " +
-                    gameInfo.blackUsername() + "\n");
+        System.out.print("    Game No. | Game Name | White Player Username | Black Player Username\n");
+        for (int i = 0; i < response.games().size(); i++) {
+            this.gameListIDMap.put((i+1), response.games().get(i).gameID());
+            System.out.print("    " + (i+1) + " | " +
+                    response.games().get(i).gameName() + " | " +
+                    response.games().get(i).whiteUsername() + " | " +
+                    response.games().get(i).blackUsername() + "\n");
         }
         System.out.print("\n");
     }
 
     private void create(ArrayList<String> userArgs) throws CommunicationException {
-        CreateGameResponse response = server.createGame(new CreateGameRequest(userArgs.getFirst()), this.userAuthToken);
-        System.out.print("New game \"" + userArgs.getFirst() + "\" created with ID: " + response.gameID() + "\n");
+        server.createGame(new CreateGameRequest(userArgs.getFirst()), this.userAuthToken);
+        System.out.print("New game \"" + userArgs.getFirst() + "\"\n");
     }
 
     private void join(ArrayList<String> userArgs) throws CommunicationException {
         String color;
         if (userArgs.get(1) != null) { color = userArgs.get(1).toUpperCase();
         } else { color = null; }
-        int gameID = Integer.parseInt(userArgs.get(0));
+        // TODO: implement error checking here so that trying to join a game that does not exist doesn't crash program
+        int gameID = this.gameListIDMap.get(Integer.parseInt(userArgs.get(0)));
         server.joinGame(new JoinGameRequest(color, gameID), this.userAuthToken);
         // Default board printing for phase 5
         //     Actual implementation will be done via websockets in phase 6
