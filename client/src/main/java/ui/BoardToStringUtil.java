@@ -59,6 +59,7 @@ public final class BoardToStringUtil {
 
     private static String getBoardRows(ChessBoard board, ChessGame.TeamColor callerColor) {
         StringBuilder returnStringBuilder = new StringBuilder();
+
         int spaceColorDesignator;
         int [] rowOrder;
         int [] colOrder;
@@ -72,32 +73,45 @@ public final class BoardToStringUtil {
             colOrder = new int [] {8,7,6,5,4,3,2,1};
         }
 
-        ChessGame.TeamColor currSpaceColor;
         for(int i: rowOrder) {
-            returnStringBuilder.append(boardEdgeColor);
-            returnStringBuilder.append(indexColor);
-            returnStringBuilder.append(getCharWithSpacing(String.valueOf(i)));
-            if (i % 2 == spaceColorDesignator) { currSpaceColor = ChessGame.TeamColor.WHITE; }
-            else { currSpaceColor = ChessGame.TeamColor.BLACK; }
+            returnStringBuilder.append(getBoardLeftSide(i));
+            ChessGame.TeamColor nextSpaceColor;
+            if (i % 2 == spaceColorDesignator) { nextSpaceColor = ChessGame.TeamColor.WHITE; }
+            else { nextSpaceColor = ChessGame.TeamColor.BLACK; }
             for (int j: colOrder) {
-                if (currSpaceColor == ChessGame.TeamColor.WHITE) {
-                    returnStringBuilder.append(boardSpaceWhiteColor);
-                    currSpaceColor = ChessGame.TeamColor.BLACK;
-                } else {
-                    returnStringBuilder.append(boardSpaceBlackColor);
-                    currSpaceColor = ChessGame.TeamColor.WHITE;
-                }
+                returnStringBuilder.append(getANSIForColor(nextSpaceColor));
+                nextSpaceColor = getOppositeTeamColor(nextSpaceColor);
                 ChessPiece currPiece = board.getPiece(new ChessPosition(i, j));
                 if (!(currPiece == null)) {
                     returnStringBuilder.append(getPiece(currPiece.getPieceType(), currPiece.getTeamColor()));
                 } else { returnStringBuilder.append(CHESSSPACE); }
             }
-            returnStringBuilder.append(boardEdgeColor);
-            returnStringBuilder.append(CHESSSPACE);
-            returnStringBuilder.append(originalBackgroundColor);
+            returnStringBuilder.append(getBoardRightSide());
             returnStringBuilder.append(System.lineSeparator());
         }
         return returnStringBuilder.toString();
+    }
+
+    private static String getBoardLeftSide(int index) {
+        return boardEdgeColor +
+                indexColor +
+                getCharWithSpacing(String.valueOf(index));
+    }
+
+    private static String getBoardRightSide() {
+        return boardEdgeColor +
+                CHESSSPACE +
+                originalBackgroundColor;
+    }
+
+    private static String getANSIForColor(ChessGame.TeamColor color) {
+        if (color == ChessGame.TeamColor.WHITE) { return boardSpaceWhiteColor; }
+        else { return boardSpaceBlackColor; }
+    }
+
+    private static ChessGame.TeamColor getOppositeTeamColor(ChessGame.TeamColor color) {
+        if (color == ChessGame.TeamColor.WHITE) { return ChessGame.TeamColor.BLACK; }
+        else { return ChessGame.TeamColor.WHITE; }
     }
 
     private static String getFooter() { return getBlankFullRow(boardEdgeColor); }
