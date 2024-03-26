@@ -8,7 +8,7 @@ import requestRecords.*;
 import responseRecords.*;
 import serverCommunication.ServerFacade;
 import serverCommunication.CommunicationException;
-import ui.BoardPrinter;
+import ui.BoardToStringUtil;
 
 public class ConsoleRunner {
     private final ServerFacade server = new ServerFacade(3676);
@@ -222,7 +222,7 @@ public class ConsoleRunner {
         // Default board printing for phase 5
         //     Actual implementation will be done via websockets in phase 6
         System.out.print("GameID: " + gameID + "\n");
-        BoardPrinter.printBoardAll(BoardPrinter.getADefaultBoard());
+        System.out.print(BoardToStringUtil.getBoardAll(BoardToStringUtil.getADefaultBoard()));
     }
 
     private void observe(ArrayList<String> userArgs) throws CommunicationException {
