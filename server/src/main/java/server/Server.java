@@ -1,11 +1,12 @@
 package server;
 
 import spark.*;
-import org.eclipse.jetty.websocket.api.annotations.WebSocket;
-import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
+import org.eclipse.jetty.websocket.api.annotations.*;
 import handlers.AuthorizationHandler;
 import handlers.DatabaseOperationsHandler;
 import handlers.GameHandler;
+
+import java.io.IOException;
 
 @WebSocket
 public class Server {
@@ -28,8 +29,20 @@ public class Server {
         return Spark.port();
     }
 
+    @OnWebSocketConnect
+    public void onConnect(org.eclipse.jetty.websocket.api.Session session) throws IOException {
+        session.getRemote().sendString("Websocket connection established. Welcome.\n");
+    }
+
     @OnWebSocketMessage
-    public void onMessage(Session session, String message) { System.out.print(message); }
+    public void onMessage(org.eclipse.jetty.websocket.api.Session session, String message) throws IOException {
+        session.getRemote().sendString("Message received:" + message + '\n');
+    }
+
+    @OnWebSocketClose
+    public void onClose(org.eclipse.jetty.websocket.api.Session session) throws IOException {
+        session.getRemote().sendString("Websocket connection closed. Goodbye.\n");
+    }
 
     public void stop() {
         Spark.stop();

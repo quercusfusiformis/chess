@@ -1,11 +1,13 @@
 package serverCommunication;
 
+import org.glassfish.tyrus.core.wsadl.model.Endpoint;
+
 import javax.websocket.*;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-public class WebsocketCommunicator {
+public class WebsocketCommunicator extends Endpoint {
     private final URI connectURI;
 
     public WebsocketCommunicator(int serverPort, String urlStem) {
