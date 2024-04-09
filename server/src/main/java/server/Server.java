@@ -23,7 +23,6 @@ public class Server {
         Spark.post("/game", (req, res) -> new GameHandler(req, res).createGame());
         Spark.put("/game", (req, res) -> new GameHandler(req, res).joinGame());
         Spark.delete("/db", (req, res) -> new DatabaseOperationsHandler(req, res).clear());
-        Spark.get("/echo/:msg", (req, res) -> "Server Websocket says: " + req.params(":msg") + " received.\n");
 
         Spark.awaitInitialization();
         return Spark.port();
@@ -36,13 +35,13 @@ public class Server {
 
     @OnWebSocketMessage
     public void onMessage(Session session, String message) throws Exception {
-        session.getRemote().sendString("Message received:" + message + '\n');
+        session.getRemote().sendString("Message received: " + message);
     }
 
-//    @OnWebSocketError
-//    public void onError(org.eclipse.jetty.websocket.api.Session session, Throwable error) throws Exception {
-//        session.getRemote().sendString(error.getMessage());
-//    }
+    @OnWebSocketError
+    public void onError(org.eclipse.jetty.websocket.api.Session session, Throwable error) throws Exception {
+        session.getRemote().sendString(error.getMessage());
+    }
 
 //    @OnWebSocketClose
 //    public void onClose(org.eclipse.jetty.websocket.api.Session session, int statusCode, String reason) throws Exception {

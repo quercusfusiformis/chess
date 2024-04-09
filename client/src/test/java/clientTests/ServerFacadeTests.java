@@ -2,7 +2,10 @@ package clientTests;
 
 import org.junit.jupiter.api.*;
 import static org.junit.jupiter.api.Assertions.*;
+
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.concurrent.TimeUnit;
 
 import requestRecords.CreateGameRequest;
 import requestRecords.JoinGameRequest;
@@ -191,12 +194,14 @@ public class ServerFacadeTests {
     @Test
     @Order(15)
     @DisplayName("join_withwebsocket (+)")
-    public void joinWSPositive() throws CommunicationException {
+    public void joinWSPositive() throws CommunicationException, IOException, InterruptedException {
         String kermitAuth = facade.register(new RegisterRequest("kermit", "beinggreenisprettycoolngl",
                 "kermit@muppets.com")).authToken();
         String fozzieAuth = facade.register(fozzieRRequest).authToken();
         int gameID = facade.createGame(new CreateGameRequest("Muppet Showdown"), fozzieAuth).gameID();
         facade.joinGame(new JoinGameRequest("WHITE", gameID), kermitAuth);
+        facade.send("Websocket termination has been requested.");
+        TimeUnit.SECONDS.sleep(2);
         facade.leaveGame();
     }
 }

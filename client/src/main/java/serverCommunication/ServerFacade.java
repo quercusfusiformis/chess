@@ -80,7 +80,7 @@ public class ServerFacade {
 
     public void leaveGame() {
         try {
-            this.websocketCommunicator.send("Connection termination has been requested.\n");
+            this.websocketCommunicator.ensureOpenSession();
             this.websocketCommunicator.closeSession();
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -98,5 +98,10 @@ public class ServerFacade {
             HttpURLConnection connection = this.httpCommunicator.makeHTTPRequest("/db", "DELETE", "");
             if (!(HttpCommunicator.hasGoodResponseCode(connection))) { HttpCommunicator.throwResponseError(connection); }
         } catch (Exception ex) { throw new CommunicationException(ex.getMessage()); }
+    }
+
+    public void send(String message) throws IOException {
+        this.websocketCommunicator.ensureOpenSession();
+        this.websocketCommunicator.send(message);
     }
 }
