@@ -1,8 +1,9 @@
 package clientTests;
 
-import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.*;
+import static org.junit.jupiter.api.Assertions.*;
 import java.util.ArrayList;
+
 import requestRecords.CreateGameRequest;
 import requestRecords.JoinGameRequest;
 import requestRecords.LoginRequest;
@@ -26,7 +27,7 @@ public class ServerFacadeTests {
         server = new Server();
         int port = server.run(0);
         System.out.println("Started test HTTP server on " + port);
-        facade = new ServerFacade(port, "http://localhost:");
+        facade = new ServerFacade(port, "localhost:");
     }
 
     @AfterAll

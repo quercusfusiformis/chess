@@ -15,7 +15,7 @@ public class HttpCommunicator {
 
     public HttpCommunicator(int serverPort, String urlStem) {
         this.serverPort = serverPort;
-        this.urlStem = urlStem;
+        this.urlStem = "http://" + urlStem;
     }
 
     public HttpURLConnection makeHTTPRequest(String path, String method, String body, String authHeader) throws URISyntaxException, IOException {

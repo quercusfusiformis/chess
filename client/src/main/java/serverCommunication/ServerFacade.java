@@ -1,15 +1,20 @@
 package serverCommunication;
 
 import com.google.gson.Gson;
+import javax.websocket.*;
+
 import java.net.HttpURLConnection;
+
 import requestRecords.*;
 import responseRecords.*;
 
 public class ServerFacade {
     private final HttpCommunicator httpCommunicator;
+    private final WebsocketCommunicator websocketCommunicator;
 
     public ServerFacade(int serverPort, String urlStem) {
         this.httpCommunicator = new HttpCommunicator(serverPort, urlStem);
+        this.websocketCommunicator = new WebsocketCommunicator(serverPort, urlStem);
     }
 
     public RegisterResponse register(RegisterRequest request) throws CommunicationException {
@@ -67,8 +72,19 @@ public class ServerFacade {
             String body = new Gson().toJson(request);
             HttpURLConnection connection = this.httpCommunicator.makeHTTPRequest("/game", "PUT", body, authToken);
             if (!(HttpCommunicator.hasGoodResponseCode(connection))) { HttpCommunicator.throwResponseError(connection); }
+//            return this.websocketCommunicator.getNewSession();
         } catch (Exception ex) { throw new CommunicationException(ex.getMessage()); }
     }
+
+    public String redrawBoard() { return ""; }
+
+    public void leaveGame() {}
+
+    public void makeMove() {}
+
+    public void resign() {}
+
+    public String highlightLegalMoves() { return ""; }
 
     public void clear() throws CommunicationException {
         try {

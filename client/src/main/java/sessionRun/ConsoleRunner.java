@@ -11,7 +11,7 @@ import serverCommunication.CommunicationException;
 import ui.BoardToStringUtil;
 
 public class ConsoleRunner {
-    private final ServerFacade server = new ServerFacade(3676, "http://localhost:");
+    private final ServerFacade server = new ServerFacade(3676, "localhost:");
     private boolean userAuthorized = false;
     private String userAuthToken;
     private boolean running = true;
@@ -63,6 +63,21 @@ public class ConsoleRunner {
                 help - lists available commands
             
             """, getUserAuthStatusAsString(this.userAuthorized));
+        System.out.print(printString);
+    }
+
+    private void printWSSessionMenu() {
+        String printString = String.format("""
+                
+                %s OPTIONS:
+                    showboard - show board
+                    showmoves - show available moves
+                    move - move a piece
+                    leave - leave game
+                    resign - forfeit game
+                    help - lists available commands
+                
+                """, getUserAuthStatusAsString(this.userAuthorized));
         System.out.print(printString);
     }
 
@@ -220,8 +235,9 @@ public class ConsoleRunner {
         String color;
         if (userArgs.get(1) != null) { color = userArgs.get(1).toUpperCase();
         } else { color = null; }
-        // TODO: implement error checking here so that trying to join a game that does not exist doesn't crash program
-        int gameID = this.gameListIDMap.get(Integer.parseInt(userArgs.get(0)));
+        Integer requestedID = Integer.parseInt(userArgs.get(0));
+        if (!gameListIDMap.containsKey(requestedID)) { throw new CommunicationException("Invalid game ID requested. List games and try again.\n"); }
+        int gameID = this.gameListIDMap.get(requestedID);
         server.joinGame(new JoinGameRequest(color, gameID), this.userAuthToken);
         // Default board printing for phase 5
         //     Actual implementation will be done via websockets in phase 6
