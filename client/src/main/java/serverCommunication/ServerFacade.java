@@ -1,7 +1,6 @@
 package serverCommunication;
 
 import com.google.gson.Gson;
-import javax.websocket.*;
 
 import java.net.HttpURLConnection;
 
