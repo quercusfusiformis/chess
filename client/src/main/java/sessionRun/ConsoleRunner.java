@@ -266,6 +266,16 @@ public class ConsoleRunner {
         } else { printLoggedInMenu(); }
     }
 
+    private void redrawBoard() {}
+
+    private void leaveGame() {}
+
+    private void makeMove() {}
+
+    private void resign() {}
+
+    private void highlightLegalMoves() {}
+
     private void setAuthorization(String authToken) {
         this.userAuthToken = authToken;
         this.userAuthorized = (authToken != null);
