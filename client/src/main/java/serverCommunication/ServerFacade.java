@@ -2,6 +2,7 @@ package serverCommunication;
 
 import com.google.gson.Gson;
 
+import java.io.IOException;
 import java.net.HttpURLConnection;
 
 import requestRecords.*;
@@ -71,13 +72,20 @@ public class ServerFacade {
             String body = new Gson().toJson(request);
             HttpURLConnection connection = this.httpCommunicator.makeHTTPRequest("/game", "PUT", body, authToken);
             if (!(HttpCommunicator.hasGoodResponseCode(connection))) { HttpCommunicator.throwResponseError(connection); }
-//            return this.websocketCommunicator.getNewSession();
+            this.websocketCommunicator.ensureOpenSession();
         } catch (Exception ex) { throw new CommunicationException(ex.getMessage()); }
     }
 
     public String redrawBoard() { return ""; }
 
-    public void leaveGame() {}
+    public void leaveGame() {
+        try {
+            this.websocketCommunicator.send("Connection termination has been requested.\n");
+            this.websocketCommunicator.closeSession();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     public void makeMove() {}
 

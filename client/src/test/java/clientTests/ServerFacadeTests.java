@@ -187,4 +187,16 @@ public class ServerFacadeTests {
         CommunicationException exception = assertThrows(CommunicationException.class, () -> facade.logout(fozzieAuth));
         assertEquals("Server returned: 401 Unauthorized", exception.getMessage());
     }
+
+    @Test
+    @Order(15)
+    @DisplayName("join_withwebsocket (+)")
+    public void joinWSPositive() throws CommunicationException {
+        String kermitAuth = facade.register(new RegisterRequest("kermit", "beinggreenisprettycoolngl",
+                "kermit@muppets.com")).authToken();
+        String fozzieAuth = facade.register(fozzieRRequest).authToken();
+        int gameID = facade.createGame(new CreateGameRequest("Muppet Showdown"), fozzieAuth).gameID();
+        facade.joinGame(new JoinGameRequest("WHITE", gameID), kermitAuth);
+        facade.leaveGame();
+    }
 }
