@@ -1,14 +1,23 @@
 package server;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonDeserializer;
 import spark.Spark;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.*;
 import handlers.AuthorizationHandler;
 import handlers.DatabaseOperationsHandler;
 import handlers.GameHandler;
+import webSocketMessages.serverMessages.ServerMessage;
+import webSocketMessages.userCommands.*;
+
+import java.util.ArrayList;
 
 @WebSocket
 public class Server {
+    ArrayList<Session> openSessions = new ArrayList<>();
+
     public int run(int desiredPort) {
         Spark.port(desiredPort);
         Spark.webSocket("/connect", Server.class);
@@ -28,25 +37,62 @@ public class Server {
         return Spark.port();
     }
 
-//    @OnWebSocketConnect
-//    public void onOpen(org.eclipse.jetty.websocket.api.Session session) throws Exception {
-//        session.getRemote().sendString("Websocket connection established. Welcome.\n");
-//    }
+    @OnWebSocketConnect
+    public void onOpen(Session session) throws Exception {
+        this.openSessions.add(session);
+    }
+
+    @OnWebSocketClose
+    public void onClose(Session session, int statusCode, String reason) throws Exception {
+        this.openSessions.remove(session);
+    }
 
     @OnWebSocketMessage
     public void onMessage(Session session, String message) throws Exception {
-        session.getRemote().sendString("Message received: " + message);
+        UserGameCommand command = createCommandSerializer().fromJson(message, UserGameCommand.class);
+        System.out.println("UserGameCommand: " + command.getCommandType() + " via a command of type " + command.getClass());
+
+        ServerMessage serverMessage = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, "Successful message transmission");
+        sendServerMessageAllSessions(serverMessage);
+    }
+
+    private static Gson createCommandSerializer() {
+        GsonBuilder gsonBuilder = new GsonBuilder();
+
+        gsonBuilder.registerTypeAdapter(UserGameCommand.class, (JsonDeserializer<UserGameCommand>) (el, type, ctx) -> {
+            UserGameCommand command = null;
+            if (el.isJsonObject()) {
+                String commandType = el.getAsJsonObject().get("commandType").getAsString();
+                switch (UserGameCommand.CommandType.valueOf(commandType)) {
+                    case JOIN_PLAYER -> command = ctx.deserialize(el, JoinPlayerCommand.class);
+                    case JOIN_OBSERVER -> command = ctx.deserialize(el, JoinObserverCommand.class);
+                    case MAKE_MOVE -> command = ctx.deserialize(el, MakeMoveCommand.class);
+                    case LEAVE -> command = ctx.deserialize(el, LeaveGameCommand.class);
+                    case RESIGN -> command = ctx.deserialize(el, ResignGameCommand.class);
+                }
+            }
+            return command;
+        });
+        return gsonBuilder.create();
+    }
+
+    private void sendServerMessageToSession(Session session, ServerMessage message) throws Exception {
+        String serverMsgStr = new Gson().toJson(message);
+        session.getRemote().sendString(serverMsgStr);
+    }
+
+    private void sendServerMessageAllSessions(ServerMessage message) throws Exception {
+        String serverMsgStr = new Gson().toJson(message);
+        for (Session session: this.openSessions) {
+            session.getRemote().sendString(serverMsgStr);
+        }
     }
 
     @OnWebSocketError
     public void onError(org.eclipse.jetty.websocket.api.Session session, Throwable error) throws Exception {
-        session.getRemote().sendString(error.getMessage());
+        ServerMessage errorMessage = new ServerMessage(ServerMessage.ServerMessageType.ERROR, error.getMessage());
+        sendServerMessageAllSessions(errorMessage);
     }
-
-//    @OnWebSocketClose
-//    public void onClose(org.eclipse.jetty.websocket.api.Session session, int statusCode, String reason) throws Exception {
-//        session.getRemote().sendString("Websocket connection closed. Goodbye.\n");
-//    }
 
     public void stop() {
         Spark.stop();

@@ -7,6 +7,7 @@ import java.net.HttpURLConnection;
 
 import requestRecords.*;
 import responseRecords.*;
+import webSocketMessages.userCommands.UserGameCommand;
 
 public class ServerFacade {
     private final HttpCommunicator httpCommunicator;
@@ -100,8 +101,12 @@ public class ServerFacade {
         } catch (Exception ex) { throw new CommunicationException(ex.getMessage()); }
     }
 
-    public void send(String message) throws IOException {
+    public void sendCommand(UserGameCommand command) {
         this.websocketCommunicator.ensureOpenSession();
-        this.websocketCommunicator.send(message);
+        try {
+            this.websocketCommunicator.sendCommand(command);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

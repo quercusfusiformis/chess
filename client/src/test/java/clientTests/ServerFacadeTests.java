@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.concurrent.TimeUnit;
 
 import requestRecords.CreateGameRequest;
 import requestRecords.JoinGameRequest;
@@ -15,6 +14,7 @@ import responseRecords.ListGameInfo;
 import server.Server;
 import serverCommunication.ServerFacade;
 import serverCommunication.CommunicationException;
+import webSocketMessages.userCommands.*;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class ServerFacadeTests {
@@ -194,14 +194,23 @@ public class ServerFacadeTests {
     @Test
     @Order(15)
     @DisplayName("join_withwebsocket (+)")
-    public void joinWSPositive() throws CommunicationException, IOException, InterruptedException {
+    public void joinWSPositive() throws CommunicationException {
         String kermitAuth = facade.register(new RegisterRequest("kermit", "beinggreenisprettycoolngl",
                 "kermit@muppets.com")).authToken();
         String fozzieAuth = facade.register(fozzieRRequest).authToken();
         int gameID = facade.createGame(new CreateGameRequest("Muppet Showdown"), fozzieAuth).gameID();
         facade.joinGame(new JoinGameRequest("WHITE", gameID), kermitAuth);
-        facade.send("Websocket termination has been requested.");
-        TimeUnit.SECONDS.sleep(2);
         facade.leaveGame();
+    }
+
+    @Test
+    @Order(16)
+    @DisplayName("notification test")
+    public void notification() throws CommunicationException {
+        String kermitAuth = facade.register(new RegisterRequest("kermit", "beinggreenisprettycoolngl",
+                "kermit@muppets.com")).authToken();
+        facade.createGame(new CreateGameRequest("newgame"), kermitAuth);
+        facade.listGames(kermitAuth);
+        facade.sendCommand(new JoinObserverCommand(1, kermitAuth));
     }
 }

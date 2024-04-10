@@ -1,5 +1,9 @@
 package serverCommunication;
 
+import com.google.gson.Gson;
+import webSocketMessages.serverMessages.ServerMessage;
+import webSocketMessages.userCommands.UserGameCommand;
+
 import javax.websocket.*;
 import java.io.IOException;
 import java.net.URI;
@@ -35,7 +39,10 @@ public class WebsocketCommunicator extends Endpoint {
         Session session = wsContainer.connectToServer(this, this.connectURI);
         session.addMessageHandler(new MessageHandler.Whole<String>() {
             public void onMessage(String message) {
-                System.out.println(message);
+                ServerMessage serverMessage = new Gson().fromJson(message, ServerMessage.class);
+                if (serverMessage.getServerMessageType() != ServerMessage.ServerMessageType.LOAD_GAME) {
+                    System.out.println(serverMessage.getServerMessageType() + ": " + serverMessage.getServerMessageValue());
+                } else { System.out.println(("LOAD_GAME received, I'll implement that later")); }
             }
         });
         return session;
@@ -43,7 +50,10 @@ public class WebsocketCommunicator extends Endpoint {
 
     public void closeSession() throws IOException { this.session.close(); }
 
-    public void send(String msg) throws IOException { this.session.getBasicRemote().sendText(msg); }
+    public void sendCommand(UserGameCommand command) throws IOException {
+        String commandStr = new Gson().toJson(command);
+        this.session.getBasicRemote().sendText(commandStr);
+    }
 
     public void onOpen(Session session, EndpointConfig endpointConfig) {}
 }
