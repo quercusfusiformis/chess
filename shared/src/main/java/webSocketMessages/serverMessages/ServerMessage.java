@@ -4,13 +4,11 @@ import java.util.Objects;
 
 /**
  * Represents a Message the server can send through a WebSocket
- * 
  * Note: You can add to this class, but you should not alter the existing
  * methods.
  */
 public class ServerMessage {
     ServerMessageType serverMessageType;
-    String value = "";
 
     public enum ServerMessageType {
         LOAD_GAME,
@@ -22,16 +20,9 @@ public class ServerMessage {
         this.serverMessageType = type;
     }
 
-    public ServerMessage(ServerMessageType type, String value) {
-        this.serverMessageType = type;
-        this.value = value;
-    }
-
     public ServerMessageType getServerMessageType() {
         return this.serverMessageType;
     }
-
-    public String getServerMessageValue() { return this.value; }
 
     @Override
     public boolean equals(Object o) {

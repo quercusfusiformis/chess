@@ -1,8 +1,13 @@
 package serverCommunication;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonDeserializer;
+import webSocketMessages.serverMessages.ServerErrorMessage;
+import webSocketMessages.serverMessages.ServerLoadGameMessage;
 import webSocketMessages.serverMessages.ServerMessage;
-import webSocketMessages.userCommands.UserGameCommand;
+import webSocketMessages.serverMessages.ServerNotification;
+import webSocketMessages.userCommands.*;
 
 import javax.websocket.*;
 import java.io.IOException;
@@ -39,13 +44,42 @@ public class WebsocketCommunicator extends Endpoint {
         Session session = wsContainer.connectToServer(this, this.connectURI);
         session.addMessageHandler(new MessageHandler.Whole<String>() {
             public void onMessage(String message) {
-                ServerMessage serverMessage = new Gson().fromJson(message, ServerMessage.class);
-                if (serverMessage.getServerMessageType() != ServerMessage.ServerMessageType.LOAD_GAME) {
-                    System.out.println(serverMessage.getServerMessageType() + ": " + serverMessage.getServerMessageValue());
-                } else { System.out.println(("LOAD_GAME received, I'll implement that later")); }
+                ServerMessage serverMessage = createMessageSerializer().fromJson(message, ServerMessage.class);
+                ServerMessage.ServerMessageType messageType = serverMessage.getServerMessageType();
+                switch (messageType) {
+                    case LOAD_GAME -> {
+                        ServerLoadGameMessage msg = (ServerLoadGameMessage) serverMessage;
+                    }
+                    case ERROR -> {
+                        ServerErrorMessage msg = (ServerErrorMessage) serverMessage;
+                        System.out.println(msg.getServerMessageType() + ": " + msg.getErrorName() + ": " + msg.getErrorMessage());
+                    }
+                    case NOTIFICATION -> {
+                        ServerNotification msg = (ServerNotification) serverMessage;
+                        System.out.println(msg.getServerMessageType() + ": " + msg.getNotification());
+                    }
+                }
             }
         });
         return session;
+    }
+
+    private static Gson createMessageSerializer() {
+        GsonBuilder gsonBuilder = new GsonBuilder();
+
+        gsonBuilder.registerTypeAdapter(ServerMessage.class, (JsonDeserializer<ServerMessage>) (el, type, ctx) -> {
+            ServerMessage message = null;
+            if (el.isJsonObject()) {
+                String messageType = el.getAsJsonObject().get("serverMessageType").getAsString();
+                switch (ServerMessage.ServerMessageType.valueOf(messageType)) {
+                    case LOAD_GAME -> message = ctx.deserialize(el, ServerLoadGameMessage.class);
+                    case ERROR -> message = ctx.deserialize(el, ServerErrorMessage.class);
+                    case NOTIFICATION -> message = ctx.deserialize(el, ServerNotification.class);
+                }
+            }
+            return message;
+        });
+        return gsonBuilder.create();
     }
 
     public void closeSession() throws IOException { this.session.close(); }

@@ -1,4 +1,4 @@
-package handlers;
+package httpHandlers;
 
 import com.google.gson.Gson;
 import spark.*;

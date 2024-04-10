@@ -3,7 +3,6 @@ package clientTests;
 import org.junit.jupiter.api.*;
 import static org.junit.jupiter.api.Assertions.*;
 
-import java.io.IOException;
 import java.util.ArrayList;
 
 import requestRecords.CreateGameRequest;

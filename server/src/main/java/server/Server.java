@@ -6,10 +6,12 @@ import com.google.gson.JsonDeserializer;
 import spark.Spark;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.*;
-import handlers.AuthorizationHandler;
-import handlers.DatabaseOperationsHandler;
-import handlers.GameHandler;
+import httpHandlers.AuthorizationHandler;
+import httpHandlers.DatabaseOperationsHandler;
+import httpHandlers.GameHandler;
+import webSocketMessages.serverMessages.ServerErrorMessage;
 import webSocketMessages.serverMessages.ServerMessage;
+import webSocketMessages.serverMessages.ServerNotification;
 import webSocketMessages.userCommands.*;
 
 import java.util.ArrayList;
@@ -52,8 +54,8 @@ public class Server {
         UserGameCommand command = createCommandSerializer().fromJson(message, UserGameCommand.class);
         System.out.println("UserGameCommand: " + command.getCommandType() + " via a command of type " + command.getClass());
 
-        ServerMessage serverMessage = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, "Successful message transmission");
-        sendServerMessageAllSessions(serverMessage);
+        ServerNotification serverNotification = new ServerNotification(ServerMessage.ServerMessageType.NOTIFICATION, "Successful message transmission");
+        sendServerMessageAllSessions(serverNotification);
     }
 
     private static Gson createCommandSerializer() {
@@ -90,7 +92,7 @@ public class Server {
 
     @OnWebSocketError
     public void onError(org.eclipse.jetty.websocket.api.Session session, Throwable error) throws Exception {
-        ServerMessage errorMessage = new ServerMessage(ServerMessage.ServerMessageType.ERROR, error.getMessage());
+        ServerErrorMessage errorMessage = new ServerErrorMessage(ServerMessage.ServerMessageType.ERROR, error.getClass().getName(), error.getMessage());
         sendServerMessageAllSessions(errorMessage);
     }
 
