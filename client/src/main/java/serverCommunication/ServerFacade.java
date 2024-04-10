@@ -7,7 +7,7 @@ import java.net.HttpURLConnection;
 
 import requestRecords.*;
 import responseRecords.*;
-import webSocketMessages.userCommands.UserGameCommand;
+import webSocketMessages.userCommands.*;
 
 public class ServerFacade {
     private final HttpCommunicator httpCommunicator;
@@ -74,14 +74,20 @@ public class ServerFacade {
             HttpURLConnection connection = this.httpCommunicator.makeHTTPRequest("/game", "PUT", body, authToken);
             if (!(HttpCommunicator.hasGoodResponseCode(connection))) { HttpCommunicator.throwResponseError(connection); }
             this.websocketCommunicator.ensureOpenSession();
+            if (request.playerColor() != null) {
+                this.websocketCommunicator.sendCommand(new JoinPlayerCommand(request.playerColor(), request.gameID(), authToken));
+            } else {
+                this.websocketCommunicator.sendCommand(new JoinObserverCommand(request.gameID(), authToken));
+            }
         } catch (Exception ex) { throw new CommunicationException(ex.getMessage()); }
     }
 
     public String redrawBoard() { return ""; }
 
-    public void leaveGame() {
+    public void leaveGame(String authToken) {
         try {
             this.websocketCommunicator.ensureOpenSession();
+            this.websocketCommunicator.sendCommand(new LeaveGameCommand(authToken));
             this.websocketCommunicator.closeSession();
         } catch (IOException e) {
             throw new RuntimeException(e);

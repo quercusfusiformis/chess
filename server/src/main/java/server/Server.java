@@ -14,11 +14,45 @@ import webSocketMessages.serverMessages.ServerMessage;
 import webSocketMessages.serverMessages.ServerNotification;
 import webSocketMessages.userCommands.*;
 
-import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.NoSuchElementException;
 
 @WebSocket
 public class Server {
-    ArrayList<Session> openSessions = new ArrayList<>();
+    private final HashMap<Integer, HashSet<Session>> openSessionMap = new HashMap<>();
+
+    private void changeSessionGameID(Session session, int updatedGameID) {
+        removeSession(session);
+        addSessionWithGameID(session, updatedGameID);
+    }
+
+    private void addSessionWithGameID(Session session, int updatedGameID) {
+        if (this.openSessionMap.containsKey(updatedGameID)) {
+            this.openSessionMap.get(updatedGameID).add(session);
+        } else {
+            this.openSessionMap.put(updatedGameID, new HashSet<>());
+            this.openSessionMap.get(updatedGameID).add(session);
+        }
+    }
+
+    private void removeSession(Session session) {
+        int currSessionGame = getSessionGameID(session);
+        this.openSessionMap.get(currSessionGame).remove(session);
+    }
+
+    private int getSessionGameID(Session session) {
+        Integer foundGameID = null;
+        for (Map.Entry<Integer, HashSet<Session>> entry: this.openSessionMap.entrySet()) {
+            if (entry.getValue().contains(session)) {
+                foundGameID = entry.getKey();
+            }
+        }
+        if (foundGameID != null) {
+            return foundGameID;
+        } else { throw new NoSuchElementException("The requested session (" + session.toString() + ") was not found."); }
+    }
 
     public int run(int desiredPort) {
         Spark.port(desiredPort);
@@ -41,18 +75,41 @@ public class Server {
 
     @OnWebSocketConnect
     public void onOpen(Session session) throws Exception {
-        this.openSessions.add(session);
+        addSessionWithGameID(session, -1);
     }
 
     @OnWebSocketClose
     public void onClose(Session session, int statusCode, String reason) throws Exception {
-        this.openSessions.remove(session);
+        try {
+            removeSession(session);
+            System.out.println("Session: " + session.toString() + " may have ended suddenly.");
+        } catch (NoSuchElementException e) {
+            System.out.println("Session ended successfully.");
+        }
     }
 
     @OnWebSocketMessage
     public void onMessage(Session session, String message) throws Exception {
         UserGameCommand command = createCommandSerializer().fromJson(message, UserGameCommand.class);
-        System.out.println("UserGameCommand: " + command.getCommandType() + " via a command of type " + command.getClass());
+        // Going to need to sort operations based on what command is called: kind of like a handler
+        // Make sure to move the new session user into the correct game based on what they do
+        int x;
+        switch (command.getCommandType()) {
+            case JOIN_PLAYER -> {
+                JoinPlayerCommand jpCommand = (JoinPlayerCommand) command;
+                changeSessionGameID(session, jpCommand.getRequestedGameID());
+            } case JOIN_OBSERVER -> {
+                JoinObserverCommand joCommand = (JoinObserverCommand) command;
+                changeSessionGameID(session, joCommand.getRequestedGameID());
+            } case LEAVE -> {
+                removeSession(session);
+                ServerNotification leftGameMessage = new ServerNotification(ServerMessage.ServerMessageType.NOTIFICATION, "User left the game.");
+                sendServerMessageToOtherPlayers(session, leftGameMessage);
+                sendServerMessageAllSessions(leftGameMessage);
+            }
+            case MAKE_MOVE -> x = 4;
+            case RESIGN -> x = 5;
+        }
 
         ServerNotification serverNotification = new ServerNotification(ServerMessage.ServerMessageType.NOTIFICATION, "Successful message transmission");
         sendServerMessageAllSessions(serverNotification);
@@ -78,22 +135,40 @@ public class Server {
         return gsonBuilder.create();
     }
 
+    private void sendServerMessageAllSessions(ServerMessage message) throws Exception {
+        for (Integer currGameID: this.openSessionMap.keySet()) {
+            sendServerMessageToGame(currGameID, message);
+        }
+    }
+
+    private void sendServerMessageToGame(int targetGameID, ServerMessage message) throws Exception {
+        for (Session session: this.openSessionMap.get(targetGameID)) {
+            sendServerMessageToSession(session, message);
+        }
+    }
+
     private void sendServerMessageToSession(Session session, ServerMessage message) throws Exception {
         String serverMsgStr = new Gson().toJson(message);
         session.getRemote().sendString(serverMsgStr);
     }
 
-    private void sendServerMessageAllSessions(ServerMessage message) throws Exception {
-        String serverMsgStr = new Gson().toJson(message);
-        for (Session session: this.openSessions) {
-            session.getRemote().sendString(serverMsgStr);
+    private void sendServerMessageToOtherPlayers(Session session, ServerMessage message) throws Exception {
+        int sessionGameID = getSessionGameID(session);
+        for (Session gameSession: this.openSessionMap.get(sessionGameID)) {
+            if (gameSession != session) {
+                sendServerMessageToSession(gameSession, message);
+            }
         }
+    }
+
+    private String getServerConnections() {
+        return "server.openSessionMap\n" + this.openSessionMap;
     }
 
     @OnWebSocketError
     public void onError(org.eclipse.jetty.websocket.api.Session session, Throwable error) throws Exception {
         ServerErrorMessage errorMessage = new ServerErrorMessage(ServerMessage.ServerMessageType.ERROR, error.getClass().getName(), error.getMessage());
-        sendServerMessageAllSessions(errorMessage);
+        sendServerMessageToSession(session, errorMessage);
     }
 
     public void stop() {

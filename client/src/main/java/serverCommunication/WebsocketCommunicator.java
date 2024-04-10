@@ -3,16 +3,12 @@ package serverCommunication;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonDeserializer;
-import webSocketMessages.serverMessages.ServerErrorMessage;
-import webSocketMessages.serverMessages.ServerLoadGameMessage;
-import webSocketMessages.serverMessages.ServerMessage;
-import webSocketMessages.serverMessages.ServerNotification;
-import webSocketMessages.userCommands.*;
-
 import javax.websocket.*;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import webSocketMessages.userCommands.*;
+import webSocketMessages.serverMessages.*;
 
 public class WebsocketCommunicator extends Endpoint {
     private final URI connectURI;

@@ -199,7 +199,7 @@ public class ServerFacadeTests {
         String fozzieAuth = facade.register(fozzieRRequest).authToken();
         int gameID = facade.createGame(new CreateGameRequest("Muppet Showdown"), fozzieAuth).gameID();
         facade.joinGame(new JoinGameRequest("WHITE", gameID), kermitAuth);
-        facade.leaveGame();
+        facade.leaveGame(kermitAuth);
     }
 
     @Test
@@ -211,5 +211,26 @@ public class ServerFacadeTests {
         facade.createGame(new CreateGameRequest("newgame"), kermitAuth);
         facade.listGames(kermitAuth);
         facade.sendCommand(new JoinObserverCommand(1, kermitAuth));
+    }
+
+    @Test
+    public void waitInGame() throws CommunicationException {
+        facade.clear();
+        String kermitAuth = facade.register(new RegisterRequest("kermit", "beinggreenisprettycoolngl",
+                "kermit@muppets.com")).authToken();
+        facade.createGame(new CreateGameRequest("newgame"), kermitAuth);
+        facade.listGames(kermitAuth);
+        facade.joinGame(new JoinGameRequest("WHITE", 1), kermitAuth);
+        facade.sendCommand(new JoinObserverCommand(1, kermitAuth));
+        while (true) {}
+    }
+
+    @Test
+    public void joinGameAndLeave() throws CommunicationException {
+        String fozzieAuth = facade.register(fozzieRRequest).authToken();
+        facade.listGames(fozzieAuth);
+//        facade.joinGame(new JoinGameRequest("BLACK", 1), fozzieAuth);
+        facade.sendCommand(new JoinObserverCommand(1, fozzieAuth));
+        facade.leaveGame(fozzieAuth);
     }
 }
