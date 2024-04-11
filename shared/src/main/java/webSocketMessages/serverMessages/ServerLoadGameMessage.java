@@ -5,14 +5,14 @@ import model.GameData;
 import java.util.Objects;
 
 public class ServerLoadGameMessage extends ServerMessage {
-    private final GameData game;
+    private final GameData gameData;
 
-    public ServerLoadGameMessage(GameData game) {
+    public ServerLoadGameMessage(GameData gameData) {
         super(ServerMessageType.LOAD_GAME);
-        this.game = game;
+        this.gameData = gameData;
     }
 
-    public GameData getBoard() { return game; }
+    public GameData getGameData() { return gameData; }
 
     @Override
     public boolean equals(Object o) {
@@ -20,11 +20,11 @@ public class ServerLoadGameMessage extends ServerMessage {
         if (o == null || getClass() != o.getClass()) return false;
         if (!super.equals(o)) return false;
         ServerLoadGameMessage that = (ServerLoadGameMessage) o;
-        return Objects.equals(game, that.game);
+        return Objects.equals(gameData, that.gameData);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), game);
+        return Objects.hash(super.hashCode(), gameData);
     }
 }

@@ -7,12 +7,15 @@ import javax.websocket.*;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+
+import model.GameData;
 import webSocketMessages.userCommands.*;
 import webSocketMessages.serverMessages.*;
 
 public class WebsocketCommunicator extends Endpoint {
     private final URI connectURI;
     private Session session;
+    private GameData gameData;
 
     public WebsocketCommunicator(int serverPort, String urlStem) {
         try {
@@ -21,6 +24,8 @@ public class WebsocketCommunicator extends Endpoint {
             throw new RuntimeException(e);
         }
     }
+
+    private void setGameData(GameData gameData) { this.gameData = gameData; }
 
     public void ensureOpenSession() {
         if (this.session == null) { initalizeSession();
@@ -45,6 +50,7 @@ public class WebsocketCommunicator extends Endpoint {
                 switch (messageType) {
                     case LOAD_GAME -> {
                         ServerLoadGameMessage msg = (ServerLoadGameMessage) serverMessage;
+                        setGameData(msg.getGameData());
                     }
                     case ERROR -> {
                         ServerErrorMessage msg = (ServerErrorMessage) serverMessage;

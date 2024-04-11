@@ -9,9 +9,7 @@ import org.eclipse.jetty.websocket.api.annotations.*;
 import httpHandlers.AuthorizationHandler;
 import httpHandlers.DatabaseOperationsHandler;
 import httpHandlers.GameHandler;
-import webSocketMessages.serverMessages.ServerErrorMessage;
 import webSocketMessages.serverMessages.ServerMessage;
-import webSocketMessages.serverMessages.ServerNotification;
 import webSocketMessages.userCommands.*;
 import websocketService.WebsocketService;
 
@@ -99,20 +97,31 @@ public class Server {
                 changeSessionGameID(session, jpCommand.getRequestedGameID());
                 ServerMessage joinMessage = wsService.joinGameAsPlayer(jpCommand.getRequestedGameID(), jpCommand.getAuthString());
                 sendServerMessageToOtherPlayers(session, joinMessage);
+                ServerMessage loadGameMessage = wsService.getGame(jpCommand.getRequestedGameID());
+                sendServerMessageToGame(jpCommand.getRequestedGameID(), loadGameMessage);
             } case JOIN_OBSERVER -> {
                 JoinObserverCommand joCommand = (JoinObserverCommand) command;
                 changeSessionGameID(session, joCommand.getRequestedGameID());
                 ServerMessage joinMessage = wsService.joinGameAsObserver(joCommand.getRequestedGameID(), joCommand.getAuthString());
                 sendServerMessageToOtherPlayers(session, joinMessage);
+                ServerMessage loadGameMessage = wsService.getGame(joCommand.getRequestedGameID());
+                sendServerMessageToGame(joCommand.getRequestedGameID(), loadGameMessage);
             } case LEAVE -> {
                 LeaveGameCommand lgCommand = (LeaveGameCommand) command;
                 int leaveGameID = getSessionGameID(session);
-                ServerMessage leaveMessage = wsService.leaveGameAsPlayer(leaveGameID, lgCommand.getAuthString());
+                ServerMessage leaveMessage = wsService.leaveGame(leaveGameID, lgCommand.getAuthString());
                 sendServerMessageToOtherPlayers(session, leaveMessage);
+                ServerMessage loadGameMessage = wsService.getGame(leaveGameID);
+                sendServerMessageToOtherPlayers(session, loadGameMessage);
                 removeSession(session);
             }
             case MAKE_MOVE -> {
                 MakeMoveCommand mmCommand = (MakeMoveCommand) command;
+                int moveGameID = getSessionGameID(session);
+                ServerMessage moveMessage = wsService.makeMove(moveGameID, mmCommand.getMove(), mmCommand.getAuthString());
+                sendServerMessageToOtherPlayers(session, moveMessage);
+                ServerMessage loadGameMessage = wsService.getGame(moveGameID);
+                sendServerMessageToGame(moveGameID, loadGameMessage);
             }
             case RESIGN -> {
                 ResignGameCommand rgCommand = (ResignGameCommand) command;
@@ -164,10 +173,6 @@ public class Server {
                 sendServerMessageToSession(gameSession, message);
             }
         }
-    }
-
-    private String getServerConnections() {
-        return "server.openSessionMap\n" + this.openSessionMap;
     }
 
     public void stop() {

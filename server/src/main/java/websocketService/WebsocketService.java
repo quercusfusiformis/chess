@@ -2,7 +2,6 @@ package websocketService;
 
 import chess.ChessMove;
 import dataAccess.*;
-import model.GameData;
 import webSocketMessages.serverMessages.*;
 
 public class WebsocketService {
@@ -48,7 +47,7 @@ public class WebsocketService {
         return joinMessage;
     }
 
-    public ServerMessage leaveGameAsPlayer(int gameID, String authToken) {
+    public ServerMessage leaveGame(int gameID, String authToken) {
         ServerMessage leaveMessage;
         try {
             if (authDAO.authExists(authToken)) {
@@ -82,7 +81,39 @@ public class WebsocketService {
     }
 
     public ServerMessage makeMove(int gameID, ChessMove move, String authToken) {
-        return new ServerMessage(ServerMessage.ServerMessageType.LOAD_GAME);
+        ServerMessage moveMessage;
+        try {
+            if (authDAO.authExists(authToken)) {
+                String username = authDAO.getUsername(authToken);
+                if (gameDAO.gameExists(gameID)) {
+                    String color = gameDAO.getPlayerColor(gameID, username);
+                    if (color != null) {
+                        try {
+                            if (gameDAO.isPlayerColor(gameID, username, color)) {
+                                gameDAO.makeMove(gameID, move);
+                                moveMessage = new ServerNotification("The " + color + " player \"" +
+                                        username + "\" moved a piece from position " +
+                                        move.getStartPosition().toString() + " to position " +
+                                        move.getEndPosition().toString() + ".");
+                            } else {
+                                throw new DataAccessException("Bad request");
+                            }
+                        } catch (IllegalArgumentException ex) {
+                            throw new DataAccessException("Bad request");
+                        }
+                    } else {
+                        throw new DataAccessException("Bad request");
+                    }
+                } else {
+                    throw new DataAccessException("Bad request");
+                }
+            } else {
+                throw new DataAccessException("Unauthorized");
+            }
+        } catch (DataAccessException ex) {
+            moveMessage =  new ServerErrorMessage(ex);
+        }
+        return moveMessage;
     }
 
     public ServerMessage resign(int gameID, String color, String authToken) {

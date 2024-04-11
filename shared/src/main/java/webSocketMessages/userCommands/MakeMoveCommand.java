@@ -1,22 +1,17 @@
 package webSocketMessages.userCommands;
 
-import chess.ChessPosition;
-
 import java.util.Objects;
+import chess.ChessMove;
 
 public class MakeMoveCommand extends UserGameCommand {
-    ChessPosition startPos;
-    ChessPosition endPos;
+    ChessMove move;
 
-    public MakeMoveCommand(ChessPosition startPos, ChessPosition endPos, String authToken) {
+    public MakeMoveCommand(ChessMove move, String authToken) {
         super(CommandType.MAKE_MOVE, authToken);
-        this.startPos = startPos;
-        this.endPos = endPos;
+        this.move = move;
     }
 
-    public ChessPosition getStartPos() { return startPos; }
-
-    public ChessPosition getEndPos() {return endPos; }
+    public ChessMove getMove() { return move; }
 
     @Override
     public boolean equals(Object o) {
@@ -24,11 +19,11 @@ public class MakeMoveCommand extends UserGameCommand {
         if (o == null || getClass() != o.getClass()) return false;
         if (!super.equals(o)) return false;
         MakeMoveCommand that = (MakeMoveCommand) o;
-        return Objects.equals(startPos, that.startPos) && Objects.equals(endPos, that.endPos);
+        return Objects.equals(move, that.move);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), startPos, endPos);
+        return Objects.hash(super.hashCode(), move);
     }
 }
