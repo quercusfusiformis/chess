@@ -97,14 +97,18 @@ public class Server {
             case JOIN_PLAYER -> {
                 JoinPlayerCommand jpCommand = (JoinPlayerCommand) command;
                 changeSessionGameID(session, jpCommand.getRequestedGameID());
+                ServerMessage joinMessage = wsService.joinGameAsPlayer(jpCommand.getRequestedGameID(), jpCommand.getAuthString());
+                sendServerMessageToOtherPlayers(session, joinMessage);
             } case JOIN_OBSERVER -> {
                 JoinObserverCommand joCommand = (JoinObserverCommand) command;
                 changeSessionGameID(session, joCommand.getRequestedGameID());
+                ServerMessage joinMessage = wsService.joinGameAsObserver(joCommand.getRequestedGameID(), joCommand.getAuthString());
+                sendServerMessageToOtherPlayers(session, joinMessage);
             } case LEAVE -> {
                 LeaveGameCommand lgCommand = (LeaveGameCommand) command;
                 int leaveGameID = getSessionGameID(session);
-                ServerMessage leftGameMessage = wsService.leaveGameAsPlayer(leaveGameID, lgCommand.getAuthString());
-                sendServerMessageToOtherPlayers(session, leftGameMessage);
+                ServerMessage leaveMessage = wsService.leaveGameAsPlayer(leaveGameID, lgCommand.getAuthString());
+                sendServerMessageToOtherPlayers(session, leaveMessage);
                 removeSession(session);
             }
             case MAKE_MOVE -> {

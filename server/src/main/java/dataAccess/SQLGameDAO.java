@@ -217,7 +217,9 @@ public class SQLGameDAO implements GameDAO {
     public String getPlayerColor(int gameID, String username) throws DataAccessException {
         if (isPlayerColor(gameID, username, "WHITE")) {
             return "WHITE";
-        } else { return "BLACK"; }
+        } else if (isPlayerColor(gameID, username, "BLACK")) {
+            return "BLACK";
+        } else { return null; }
     }
 
     public void makeMove(int gameID, ChessMove move) throws DataAccessException {

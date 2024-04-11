@@ -9,14 +9,53 @@ public class WebsocketService {
     private final SQLAuthDAO authDAO = new SQLAuthDAO();
     private final SQLGameDAO gameDAO = new SQLGameDAO();
 
-    public ServerMessage leaveGameAsPlayer(int gameID, String authToken) {
-        ServerMessage leaveMessage = new ServerErrorMessage("LEAVEERROR", "Leaving must not have worked as expected.");
+    public ServerMessage joinGameAsPlayer(int gameID, String authToken) {
+        ServerMessage joinMessage;
         try {
             if (authDAO.authExists(authToken)) {
                 String username = authDAO.getUsername(authToken);
                 if (gameDAO.gameExists(gameID)) {
                     String color = gameDAO.getPlayerColor(gameID, username);
-                    if (!(color == null)) {
+                    joinMessage = new ServerNotification("User \"" + username + "\" has joined the game as the " + color + " player.");
+                } else {
+                    throw new DataAccessException("Bad request");
+                }
+            } else {
+                throw new DataAccessException("Unauthorized");
+            }
+        } catch (DataAccessException ex) {
+            joinMessage =  new ServerErrorMessage(ex);
+        }
+        return joinMessage;
+    }
+
+    public ServerMessage joinGameAsObserver(int gameID, String authToken) {
+        ServerMessage joinMessage;
+        try {
+            if (authDAO.authExists(authToken)) {
+                String username = authDAO.getUsername(authToken);
+                if (gameDAO.gameExists(gameID)) {
+                    joinMessage = new ServerNotification("User \"" + username + "\" has joined the game as an observer.");
+                } else {
+                    throw new DataAccessException("Bad request");
+                }
+            } else {
+                throw new DataAccessException("Unauthorized");
+            }
+        } catch (DataAccessException ex) {
+            joinMessage =  new ServerErrorMessage(ex);
+        }
+        return joinMessage;
+    }
+
+    public ServerMessage leaveGameAsPlayer(int gameID, String authToken) {
+        ServerMessage leaveMessage;
+        try {
+            if (authDAO.authExists(authToken)) {
+                String username = authDAO.getUsername(authToken);
+                if (gameDAO.gameExists(gameID)) {
+                    String color = gameDAO.getPlayerColor(gameID, username);
+                    if (color != null) {
                         try {
                             if (gameDAO.isPlayerColor(gameID, username, color)) {
                                 gameDAO.updatePlayerInGame(gameID, null, color);
@@ -27,6 +66,8 @@ public class WebsocketService {
                         } catch (IllegalArgumentException ex) {
                             throw new DataAccessException("Bad request");
                         }
+                    } else {
+                        leaveMessage = new ServerNotification("Observer \"" + username + "\" has left the game.");
                     }
                 } else {
                     throw new DataAccessException("Bad request");
