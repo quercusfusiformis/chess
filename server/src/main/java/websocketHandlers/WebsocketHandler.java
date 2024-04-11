@@ -4,7 +4,7 @@ import chess.ChessMove;
 import dataAccess.*;
 import model.GameData;
 
-public class WebsocketServices {
+public class WebsocketHandler {
     private final AuthDAO authDAO = new SQLAuthDAO();
     private final GameDAO gameDAO = new SQLGameDAO();
 

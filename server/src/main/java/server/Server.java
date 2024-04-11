@@ -91,9 +91,7 @@ public class Server {
     @OnWebSocketMessage
     public void onMessage(Session session, String message) throws Exception {
         UserGameCommand command = createCommandSerializer().fromJson(message, UserGameCommand.class);
-        // Going to need to sort operations based on what command is called: kind of like a handler
-        // Make sure to move the new session user into the correct game based on what they do
-        int x;
+        // Gonna need to be able to get the username from the authToken
         switch (command.getCommandType()) {
             case JOIN_PLAYER -> {
                 JoinPlayerCommand jpCommand = (JoinPlayerCommand) command;
@@ -102,17 +100,17 @@ public class Server {
                 JoinObserverCommand joCommand = (JoinObserverCommand) command;
                 changeSessionGameID(session, joCommand.getRequestedGameID());
             } case LEAVE -> {
-                removeSession(session);
                 ServerNotification leftGameMessage = new ServerNotification(ServerMessage.ServerMessageType.NOTIFICATION, "User left the game.");
                 sendServerMessageToOtherPlayers(session, leftGameMessage);
-                sendServerMessageAllSessions(leftGameMessage);
+                removeSession(session);
             }
-            case MAKE_MOVE -> x = 4;
-            case RESIGN -> x = 5;
+            case MAKE_MOVE -> {
+                MakeMoveCommand mmCommand = (MakeMoveCommand) command;
+            }
+            case RESIGN -> {
+                ResignGameCommand rgCommand = (ResignGameCommand) command;
+            }
         }
-
-        ServerNotification serverNotification = new ServerNotification(ServerMessage.ServerMessageType.NOTIFICATION, "Successful message transmission");
-        sendServerMessageAllSessions(serverNotification);
     }
 
     private static Gson createCommandSerializer() {
