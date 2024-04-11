@@ -13,6 +13,7 @@ import webSocketMessages.serverMessages.ServerErrorMessage;
 import webSocketMessages.serverMessages.ServerMessage;
 import webSocketMessages.serverMessages.ServerNotification;
 import webSocketMessages.userCommands.*;
+import websocketService.WebsocketService;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -21,6 +22,7 @@ import java.util.NoSuchElementException;
 
 @WebSocket
 public class Server {
+    private final WebsocketService wsService = new WebsocketService();
     private final HashMap<Integer, HashSet<Session>> openSessionMap = new HashMap<>();
 
     private void changeSessionGameID(Session session, int updatedGameID) {
@@ -91,7 +93,6 @@ public class Server {
     @OnWebSocketMessage
     public void onMessage(Session session, String message) throws Exception {
         UserGameCommand command = createCommandSerializer().fromJson(message, UserGameCommand.class);
-        // Gonna need to be able to get the username from the authToken
         switch (command.getCommandType()) {
             case JOIN_PLAYER -> {
                 JoinPlayerCommand jpCommand = (JoinPlayerCommand) command;
@@ -100,7 +101,9 @@ public class Server {
                 JoinObserverCommand joCommand = (JoinObserverCommand) command;
                 changeSessionGameID(session, joCommand.getRequestedGameID());
             } case LEAVE -> {
-                ServerNotification leftGameMessage = new ServerNotification(ServerMessage.ServerMessageType.NOTIFICATION, "User left the game.");
+                LeaveGameCommand lgCommand = (LeaveGameCommand) command;
+                int leaveGameID = getSessionGameID(session);
+                ServerMessage leftGameMessage = wsService.leaveGameAsPlayer(leaveGameID, lgCommand.getAuthString());
                 sendServerMessageToOtherPlayers(session, leftGameMessage);
                 removeSession(session);
             }
@@ -161,12 +164,6 @@ public class Server {
 
     private String getServerConnections() {
         return "server.openSessionMap\n" + this.openSessionMap;
-    }
-
-    @OnWebSocketError
-    public void onError(org.eclipse.jetty.websocket.api.Session session, Throwable error) throws Exception {
-        ServerErrorMessage errorMessage = new ServerErrorMessage(ServerMessage.ServerMessageType.ERROR, error.getClass().getName(), error.getMessage());
-        sendServerMessageToSession(session, errorMessage);
     }
 
     public void stop() {

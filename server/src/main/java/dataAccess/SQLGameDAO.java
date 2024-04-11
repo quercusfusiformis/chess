@@ -2,6 +2,9 @@ package dataAccess;
 
 import java.util.Collection;
 import java.util.ArrayList;
+
+import chess.ChessMove;
+import chess.InvalidMoveException;
 import com.google.gson.Gson;
 import java.sql.Statement;
 import java.sql.ResultSet;
@@ -46,6 +49,21 @@ public class SQLGameDAO implements GameDAO {
             statement.setString(3, blackUsername);
             statement.setString(4, gameName);
             statement.setString(5, game);
+            statement.executeUpdate();
+        } catch (SQLException ex) {
+            throw new DataAccessException(ex.getMessage());
+        }
+    }
+
+    private void updateGame(int gameID, String whiteUsername, String blackUsername, String gameName, String game) throws DataAccessException {
+        try (var statement = DatabaseManager.getConnection().prepareStatement(
+                "UPDATE game SET whiteUsername = ?, blackUsername = ?, gameName = ?, game = ? WHERE gameID = ?",
+                ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY)) {
+            statement.setString(1, whiteUsername);
+            statement.setString(2, blackUsername);
+            statement.setString(3, gameName);
+            statement.setString(4, game);
+            statement.setInt(5, gameID);
             statement.executeUpdate();
         } catch (SQLException ex) {
             throw new DataAccessException(ex.getMessage());
@@ -137,11 +155,10 @@ public class SQLGameDAO implements GameDAO {
         GameData toUpdate = getGame(gameID);
         if (toUpdate == null) { throw new DataAccessException("Error: bad request"); }
         else {
-            delGame(toUpdate.gameID());
-            if (color.equals("WHITE")) {
-                addGame(toUpdate.gameID(), username, toUpdate.blackUsername(), toUpdate.gameName(), toUpdate.game());
-            } else if (color.equals("BLACK")) {
-                addGame(toUpdate.gameID(), toUpdate.whiteUsername(), username, toUpdate.gameName(), toUpdate.game());
+            if (color.equalsIgnoreCase("WHITE")) {
+                updateGame(toUpdate.gameID(), username, toUpdate.blackUsername(), toUpdate.gameName(), toUpdate.game());
+            } else if (color.equalsIgnoreCase("BLACK")) {
+                updateGame(toUpdate.gameID(), toUpdate.whiteUsername(), username, toUpdate.gameName(), toUpdate.game());
             } else {
                 throw new IllegalArgumentException("Error: invalid color parameter");
             }
@@ -174,5 +191,48 @@ public class SQLGameDAO implements GameDAO {
         else {
             throw new DataAccessException("Error: already taken");
         }
+    }
+
+    public boolean isPlayerColor(int gameID, String username, String color) throws DataAccessException {
+        if (gameExists(gameID)) {
+            GameData gameToCheck = getGame(gameID);
+            if (color == null) { throw new DataAccessException("Error: bad request"); }
+            if (color.equalsIgnoreCase("WHITE")) {
+                String whiteUsername = gameToCheck.whiteUsername();
+                if (whiteUsername != null) {
+                    return whiteUsername.equals(username);
+                } else { return false; }
+            } else if (color.equalsIgnoreCase("BLACK")) {
+                String blackUsername = gameToCheck.blackUsername();
+                if (blackUsername != null) {
+                    return blackUsername.equals(username);
+                } else { return false; }
+            } else { throw new DataAccessException("Error: bad request"); }
+        }
+        else {
+            throw new DataAccessException("Error: bad request");
+        }
+    }
+
+    public String getPlayerColor(int gameID, String username) throws DataAccessException {
+        if (isPlayerColor(gameID, username, "WHITE")) {
+            return "WHITE";
+        } else { return "BLACK"; }
+    }
+
+    public void makeMove(int gameID, ChessMove move) throws DataAccessException {
+        GameData gameData = getGame(gameID);
+        if (gameData == null) { throw new DataAccessException("Error: bad request");
+        } else {
+            ChessGame game = new Gson().fromJson(gameData.game(), ChessGame.class);
+            try {
+                game.makeMove(move);
+            } catch (InvalidMoveException ex) {
+                throw new DataAccessException(ex.getClass().getName() + ": " + ex.getMessage());
+            }
+            String serializedGame = new Gson().toJson(game);
+            updateGame(gameData.gameID(), gameData.whiteUsername(), gameData.blackUsername(), gameData.gameName(), serializedGame);
+        }
+
     }
 }

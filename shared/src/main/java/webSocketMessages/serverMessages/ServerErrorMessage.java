@@ -6,10 +6,16 @@ public class ServerErrorMessage extends ServerMessage {
     private final String errorName;
     private final String errorMessage;
 
-    public ServerErrorMessage(ServerMessageType type, String errorName, String errorMessage) {
-        super(type);
+    public ServerErrorMessage(String errorName, String errorMessage) {
+        super(ServerMessageType.ERROR);
         this.errorName = errorName;
         this.errorMessage = errorMessage;
+    }
+
+    public ServerErrorMessage(Throwable ex) {
+        super(ServerMessageType.ERROR);
+        this.errorName = ex.getClass().getName();
+        this.errorMessage = ex.getMessage();
     }
 
     public String getErrorName() { return errorName; }

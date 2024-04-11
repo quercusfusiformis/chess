@@ -1,18 +1,18 @@
 package webSocketMessages.serverMessages;
 
-import chess.ChessGame;
+import model.GameData;
 
 import java.util.Objects;
 
 public class ServerLoadGameMessage extends ServerMessage {
-    private final ChessGame game;
+    private final GameData game;
 
-    public ServerLoadGameMessage(ServerMessageType type, ChessGame game) {
-        super(type);
+    public ServerLoadGameMessage(GameData game) {
+        super(ServerMessageType.LOAD_GAME);
         this.game = game;
     }
 
-    public ChessGame getBoard() { return game; }
+    public GameData getBoard() { return game; }
 
     @Override
     public boolean equals(Object o) {
