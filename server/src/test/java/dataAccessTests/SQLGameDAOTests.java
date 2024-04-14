@@ -137,7 +137,7 @@ class SQLGameDAOTests {
     @DisplayName("updatePlayerInGame (+)")
     void updatePlayerInGamePositive() throws DataAccessException {
         GameData expectedGame = new GameData(puzzleChessGameID, "baloony", null, "Puzzle Chess", defaultGame);
-        gameDAO.updatePlayerInGame(puzzleChessGameID, "baloony", "WHITE");
+        gameDAO.updatePlayerInGame(puzzleChessGameID, "baloony", ChessGame.TeamColor.WHITE);
         assertEquals(expectedGame, gameDAO.getGame(puzzleChessGameID));
     }
 
@@ -145,7 +145,7 @@ class SQLGameDAOTests {
     @Order(11)
     @DisplayName("updatePlayerInGame (-)")
     void updatePlayerInGameNegative() {
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> gameDAO.updatePlayerInGame(puzzleChessGameID, "dally", "BLUE"));
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> gameDAO.updatePlayerInGame(puzzleChessGameID, "dally", ChessGame.TeamColor.WHITE));
         assertEquals("Error: invalid color parameter", exception.getMessage());
     }
 
@@ -153,23 +153,23 @@ class SQLGameDAOTests {
     @Order(12)
     @DisplayName("colorFreeInGame (+)")
     void colorFreeInGamePositive() throws DataAccessException {
-        assertTrue(gameDAO.colorFreeInGame("WHITE", puzzleChessGameID));
+        assertTrue(gameDAO.colorFreeInGame(ChessGame.TeamColor.WHITE, puzzleChessGameID));
     }
 
     @Test
     @Order(13)
     @DisplayName("colorFreeInGame (-)")
     void colorFreeInGameNegative() throws DataAccessException {
-        gameDAO.updatePlayerInGame(puzzleChessGameID, "bobby", "WHITE");
-        assertFalse(gameDAO.colorFreeInGame("WHITE", puzzleChessGameID));
+        gameDAO.updatePlayerInGame(puzzleChessGameID, "bobby", ChessGame.TeamColor.WHITE);
+        assertFalse(gameDAO.colorFreeInGame(ChessGame.TeamColor.WHITE, puzzleChessGameID));
     }
 
     @Test
     @Order(14)
     @DisplayName("joinGameAsPlayer (+)")
     void joinGameAsPlayerPositive() throws DataAccessException {
-        gameDAO.updatePlayerInGame(puzzleChessGameID, "bobby", "WHITE");
-        gameDAO.updatePlayerInGame(puzzleChessGameID, "hobby", "BLACK");
+        gameDAO.updatePlayerInGame(puzzleChessGameID, "bobby", ChessGame.TeamColor.WHITE);
+        gameDAO.updatePlayerInGame(puzzleChessGameID, "hobby", ChessGame.TeamColor.BLACK);
         GameData expectedGame = new GameData(puzzleChessGameID, "bobby", "hobby", "Puzzle Chess", defaultGame);
         assertEquals(expectedGame, gameDAO.getGame(puzzleChessGameID));
     }
@@ -178,9 +178,9 @@ class SQLGameDAOTests {
     @Order(15)
     @DisplayName("joinGameAsPlayer (-)")
     void joinGameAsPlayerNegative() throws DataAccessException {
-        gameDAO.updatePlayerInGame(puzzleChessGameID, "bobby", "WHITE");
-        gameDAO.updatePlayerInGame(puzzleChessGameID, "hobby", "BLACK");
-        DataAccessException exception = assertThrows(DataAccessException.class, () -> gameDAO.joinGameAsPlayer(puzzleChessGameID, "gobby", "WHITE"));
+        gameDAO.updatePlayerInGame(puzzleChessGameID, "bobby", ChessGame.TeamColor.WHITE);
+        gameDAO.updatePlayerInGame(puzzleChessGameID, "hobby", ChessGame.TeamColor.BLACK);
+        DataAccessException exception = assertThrows(DataAccessException.class, () -> gameDAO.joinGameAsPlayer(puzzleChessGameID, "gobby", ChessGame.TeamColor.WHITE));
         assertEquals("Error: already taken", exception.getMessage());
     }
 }

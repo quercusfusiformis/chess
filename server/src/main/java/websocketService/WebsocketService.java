@@ -1,5 +1,6 @@
 package websocketService;
 
+import chess.ChessGame;
 import chess.ChessMove;
 import dataAccess.*;
 import webSocketMessages.serverMessages.*;
@@ -8,14 +9,19 @@ public class WebsocketService {
     private final SQLAuthDAO authDAO = new SQLAuthDAO();
     private final SQLGameDAO gameDAO = new SQLGameDAO();
 
-    public ServerMessage joinGameAsPlayer(int gameID, String authToken) {
+    public ServerMessage joinGameAsPlayer(int gameID, ChessGame.TeamColor requestedColor, String authToken) {
         ServerMessage joinMessage;
         try {
             if (authDAO.authExists(authToken)) {
                 String username = authDAO.getUsername(authToken);
                 if (gameDAO.gameExists(gameID)) {
-                    String color = gameDAO.getPlayerColor(gameID, username);
-                    joinMessage = new ServerNotification("User \"" + username + "\" has joined the game as the " + color + " player.");
+                    ChessGame.TeamColor color = gameDAO.getPlayerColor(gameID, username);
+//                    if (requestedColor == null) { throw new DataAccessException("Bad request"); }
+                    if (requestedColor.equals(color)) {
+                        joinMessage = new ServerNotification("User \"" + username + "\" has joined the game as the " + color + " player.");
+                    } else {
+                        throw new DataAccessException("Bad request");
+                    }
                 } else {
                     throw new DataAccessException("Bad request");
                 }
@@ -53,7 +59,7 @@ public class WebsocketService {
             if (authDAO.authExists(authToken)) {
                 String username = authDAO.getUsername(authToken);
                 if (gameDAO.gameExists(gameID)) {
-                    String color = gameDAO.getPlayerColor(gameID, username);
+                    ChessGame.TeamColor color = gameDAO.getPlayerColor(gameID, username);
                     if (color != null) {
                         try {
                             if (gameDAO.isPlayerColor(gameID, username, color)) {
@@ -86,7 +92,7 @@ public class WebsocketService {
             if (authDAO.authExists(authToken)) {
                 String username = authDAO.getUsername(authToken);
                 if (gameDAO.gameExists(gameID)) {
-                    String color = gameDAO.getPlayerColor(gameID, username);
+                    ChessGame.TeamColor color = gameDAO.getPlayerColor(gameID, username);
                     if (color != null) {
                         try {
                             if (gameDAO.isPlayerColor(gameID, username, color)) {
@@ -116,8 +122,38 @@ public class WebsocketService {
         return moveMessage;
     }
 
-    public ServerMessage resign(int gameID, String color, String authToken) {
-        return new ServerMessage(ServerMessage.ServerMessageType.LOAD_GAME);
+    public ServerMessage resign(int gameID, String authToken) {
+        ServerMessage resignMessage;
+        try {
+            if (authDAO.authExists(authToken)) {
+                String username = authDAO.getUsername(authToken);
+                if (gameDAO.gameExists(gameID)) {
+                    ChessGame.TeamColor color = gameDAO.getPlayerColor(gameID, username);
+                    if (color != null) {
+                        try {
+                            if (gameDAO.isPlayerColor(gameID, username, color)) {
+                                gameDAO.setTeamTurnNull(gameID);
+                                resignMessage = new ServerNotification("The " + color + " player \"" +
+                                        username + "\" resigned. ");
+                            } else {
+                                throw new DataAccessException("Bad request");
+                            }
+                        } catch (IllegalArgumentException ex) {
+                            throw new DataAccessException("Bad request");
+                        }
+                    } else {
+                        throw new DataAccessException("Bad request");
+                    }
+                } else {
+                    throw new DataAccessException("Bad request");
+                }
+            } else {
+                throw new DataAccessException("Unauthorized");
+            }
+        } catch (DataAccessException ex) {
+            resignMessage =  new ServerErrorMessage(ex);
+        }
+        return resignMessage;
     }
 
     public ServerMessage getGame(int gameID) {

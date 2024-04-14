@@ -1,6 +1,8 @@
 package dataAccess;
 
 import java.util.Collection;
+
+import chess.ChessGame;
 import model.GameData;
 
 public class MemoryGameDAO implements GameDAO {
@@ -34,14 +36,14 @@ public class MemoryGameDAO implements GameDAO {
     }
 
     @Override
-    public void updatePlayerInGame(int gameID, String username, String color) throws IllegalArgumentException, DataAccessException {
+    public void updatePlayerInGame(int gameID, String username, ChessGame.TeamColor color) throws IllegalArgumentException, DataAccessException {
         GameData toUpdate = dbManager.getGame("gameID", new GameData(gameID, null, null, null, null));
         if (toUpdate == null) { throw new DataAccessException("Error: bad request"); }
         else {
             dbManager.delGame("all", toUpdate);
-            if (color.equals("WHITE")) {
+            if (color.equals(ChessGame.TeamColor.WHITE)) {
                 dbManager.addGame(toUpdate.gameID(), username, toUpdate.blackUsername(), toUpdate.gameName(), toUpdate.game());
-            } else if (color.equals("BLACK")) {
+            } else if (color.equals(ChessGame.TeamColor.BLACK)) {
                 dbManager.addGame(toUpdate.gameID(), toUpdate.whiteUsername(), username, toUpdate.gameName(), toUpdate.game());
             } else {
                 throw new IllegalArgumentException("Error: invalid color parameter");
@@ -50,7 +52,7 @@ public class MemoryGameDAO implements GameDAO {
     }
 
     @Override
-    public boolean colorFreeInGame(String color, int gameID) throws DataAccessException {
+    public boolean colorFreeInGame(ChessGame.TeamColor color, int gameID) throws DataAccessException {
         if (gameExists(gameID)) {
             GameData gameToCheck = getGame(gameID);
             return gameToCheck.isColorAvailable(color);
@@ -61,7 +63,7 @@ public class MemoryGameDAO implements GameDAO {
     }
 
     @Override
-    public void joinGameAsPlayer(int gameID, String username, String color) throws DataAccessException {
+    public void joinGameAsPlayer(int gameID, String username, ChessGame.TeamColor color) throws DataAccessException {
         boolean colorFree;
         try {
             colorFree = colorFreeInGame(color, gameID);

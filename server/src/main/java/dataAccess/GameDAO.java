@@ -1,6 +1,8 @@
 package dataAccess;
 
 import java.util.Collection;
+
+import chess.ChessGame;
 import model.GameData;
 
 public interface GameDAO {
@@ -14,9 +16,9 @@ public interface GameDAO {
 
     Collection<GameData> listGames() throws DataAccessException;
 
-    void updatePlayerInGame(int gameID, String username, String color) throws IllegalArgumentException, DataAccessException;
+    void updatePlayerInGame(int gameID, String username, ChessGame.TeamColor color) throws IllegalArgumentException, DataAccessException;
 
-    boolean colorFreeInGame(String color, int gameID) throws DataAccessException;
+    boolean colorFreeInGame(ChessGame.TeamColor color, int gameID) throws DataAccessException;
 
-    void joinGameAsPlayer(int gameID, String username, String color) throws DataAccessException;
+    void joinGameAsPlayer(int gameID, String username, ChessGame.TeamColor color) throws DataAccessException;
 }

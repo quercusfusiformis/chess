@@ -1,5 +1,6 @@
 package clientTests;
 
+import chess.ChessGame;
 import org.junit.jupiter.api.*;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -149,8 +150,8 @@ public class ServerFacadeTests {
                 "kermit@muppets.com")).authToken();
         String fozzieAuth = facade.register(fozzieRRequest).authToken();
         int gameID = facade.createGame(new CreateGameRequest("Muppet Showdown"), fozzieAuth).gameID();
-        facade.joinGame(new JoinGameRequest("WHITE", gameID), kermitAuth);
-        facade.joinGame(new JoinGameRequest("BLACK", gameID), fozzieAuth);
+        facade.joinGame(new JoinGameRequest(ChessGame.TeamColor.WHITE, gameID), kermitAuth);
+        facade.joinGame(new JoinGameRequest(ChessGame.TeamColor.BLACK, gameID), fozzieAuth);
         ListGameInfo muppetShowdownInfo = facade.listGames(kermitAuth).games().getFirst();
         assertEquals(new ListGameInfo(1, "kermit", "fozzie", "Muppet Showdown"), muppetShowdownInfo);
     }
@@ -162,7 +163,7 @@ public class ServerFacadeTests {
         String fozzieAuth = facade.register(fozzieRRequest).authToken();
         int gameID = facade.createGame(new CreateGameRequest("Geri's Game"), fozzieAuth).gameID();
         CommunicationException exception = assertThrows(CommunicationException.class, () ->
-                facade.joinGame(new JoinGameRequest("GREEN", gameID), fozzieAuth));
+                facade.joinGame(new JoinGameRequest(ChessGame.TeamColor.WHITE, gameID), fozzieAuth));
         assertEquals("Server returned: 400 Bad Request", exception.getMessage());
     }
 
@@ -198,8 +199,8 @@ public class ServerFacadeTests {
                 "kermit@muppets.com")).authToken();
         String fozzieAuth = facade.register(fozzieRRequest).authToken();
         int gameID = facade.createGame(new CreateGameRequest("Muppet Showdown"), fozzieAuth).gameID();
-        facade.joinGame(new JoinGameRequest("WHITE", gameID), kermitAuth);
-        facade.leaveGame(kermitAuth);
+        facade.joinGame(new JoinGameRequest(ChessGame.TeamColor.WHITE, gameID), kermitAuth);
+        facade.leaveGame(gameID, kermitAuth);
     }
 
     @Test
@@ -220,7 +221,7 @@ public class ServerFacadeTests {
                 "kermit@muppets.com")).authToken();
         facade.createGame(new CreateGameRequest("newgame"), kermitAuth);
         facade.listGames(kermitAuth);
-        facade.joinGame(new JoinGameRequest("WHITE", 1), kermitAuth);
+        facade.joinGame(new JoinGameRequest(ChessGame.TeamColor.WHITE, 1), kermitAuth);
         facade.sendCommand(new JoinObserverCommand(1, kermitAuth));
         while (true) {}
     }
@@ -231,6 +232,6 @@ public class ServerFacadeTests {
         facade.listGames(fozzieAuth);
 //        facade.joinGame(new JoinGameRequest("BLACK", 1), fozzieAuth);
         facade.sendCommand(new JoinObserverCommand(1, fozzieAuth));
-        facade.leaveGame(fozzieAuth);
+        facade.leaveGame(1, fozzieAuth);
     }
 }

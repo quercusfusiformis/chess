@@ -3,14 +3,14 @@ package webSocketMessages.userCommands;
 import java.util.Objects;
 
 public class JoinObserverCommand extends UserGameCommand {
-    private final int requestedGameID;
+    private final int gameID;
 
-    public JoinObserverCommand(int requestedGameID, String authToken) {
+    public JoinObserverCommand(int gameID, String authToken) {
         super(CommandType.JOIN_OBSERVER, authToken);
-        this.requestedGameID = requestedGameID;
+        this.gameID = gameID;
     }
 
-    public int getRequestedGameID() { return requestedGameID; }
+    public int getGameID() { return gameID; }
 
     @Override
     public boolean equals(Object o) {
@@ -18,11 +18,20 @@ public class JoinObserverCommand extends UserGameCommand {
         if (o == null || getClass() != o.getClass()) return false;
         if (!super.equals(o)) return false;
         JoinObserverCommand that = (JoinObserverCommand) o;
-        return requestedGameID == that.requestedGameID;
+        return gameID == that.gameID;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), requestedGameID);
+        return Objects.hash(super.hashCode(), gameID);
+    }
+
+    @Override
+    public String toString() {
+        return "JoinObserverCommand{" +
+                "commandType=" + commandType +
+                ", gameID=" + gameID +
+                ", authToken='" + authToken + '\'' +
+                '}';
     }
 }

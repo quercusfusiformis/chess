@@ -1,5 +1,6 @@
 package serviceTests;
 
+import chess.ChessGame;
 import org.junit.jupiter.api.*;
 import static org.junit.jupiter.api.Assertions.*;
 import java.util.UUID;
@@ -23,6 +24,7 @@ class GameServiceTests {
 
     @BeforeEach
     void setUp() throws DataAccessException {
+        doService.clear();
         String lorinAuth = this.authService.register(new RegisterRequest(
                 "79fierykittens", "mytwentyfilthybunnies", "8@gmail.com")).authToken();
         String tammyAuth = this.authService.register(new RegisterRequest(
@@ -81,7 +83,7 @@ class GameServiceTests {
     @DisplayName("joinGame (+)")
     void joinGamePositive() throws DataAccessException {
         int newGameID = this.gameService.createGame(new CreateGameRequest("chest.org"), ryanAuth).gameID();
-        this.gameService.joinGame(new JoinGameRequest("BLACK", newGameID), ryanAuth);
+        this.gameService.joinGame(new JoinGameRequest(ChessGame.TeamColor.BLACK, newGameID), ryanAuth);
     }
 
     @Test
@@ -89,9 +91,9 @@ class GameServiceTests {
     @DisplayName("joinGame (-)")
     void joinGameNegative() throws DataAccessException {
         int newGameID = this.gameService.createGame(new CreateGameRequest("chest.org"), ryanAuth).gameID();
-        this.gameService.joinGame(new JoinGameRequest("BLACK", newGameID), ryanAuth);
+        this.gameService.joinGame(new JoinGameRequest(ChessGame.TeamColor.BLACK, newGameID), ryanAuth);
         DataAccessException exception = assertThrows(DataAccessException.class, () ->
-                this.gameService.joinGame(new JoinGameRequest("BLACK", newGameID), ryanAuth));
+                this.gameService.joinGame(new JoinGameRequest(ChessGame.TeamColor.BLACK, newGameID), ryanAuth));
         assertEquals("Error: already taken", exception.getMessage());
     }
 }

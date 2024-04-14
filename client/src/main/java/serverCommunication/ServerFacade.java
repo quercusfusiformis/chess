@@ -1,5 +1,6 @@
 package serverCommunication;
 
+import chess.ChessGame;
 import com.google.gson.Gson;
 
 import java.io.IOException;
@@ -75,19 +76,25 @@ public class ServerFacade {
             if (!(HttpCommunicator.hasGoodResponseCode(connection))) { HttpCommunicator.throwResponseError(connection); }
             this.websocketCommunicator.ensureOpenSession();
             if (request.playerColor() != null) {
-                this.websocketCommunicator.sendCommand(new JoinPlayerCommand(request.playerColor(), request.gameID(), authToken));
+                if (request.playerColor().equals(ChessGame.TeamColor.WHITE)) {
+                    this.websocketCommunicator.sendCommand(new JoinPlayerCommand(request.gameID(), ChessGame.TeamColor.WHITE, authToken));
+                } else if (request.playerColor().equals(ChessGame.TeamColor.BLACK)) {
+                    this.websocketCommunicator.sendCommand(new JoinPlayerCommand(request.gameID(), ChessGame.TeamColor.BLACK, authToken));
+                } else {
+                    throw new CommunicationException("Invalid color option");
+                }
             } else {
-                this.websocketCommunicator.sendCommand(new JoinObserverCommand(request.gameID(), authToken));
+                this.websocketCommunicator.sendCommand(new JoinObserverCommand(request.gameID() - 1, authToken));
             }
         } catch (Exception ex) { throw new CommunicationException(ex.getMessage()); }
     }
 
     public String redrawBoard() { return ""; }
 
-    public void leaveGame(String authToken) {
+    public void leaveGame(int gameID, String authToken) {
         try {
             this.websocketCommunicator.ensureOpenSession();
-            this.websocketCommunicator.sendCommand(new LeaveGameCommand(authToken));
+            this.websocketCommunicator.sendCommand(new LeaveGameCommand(gameID, authToken));
             this.websocketCommunicator.closeSession();
         } catch (IOException e) {
             throw new RuntimeException(e);

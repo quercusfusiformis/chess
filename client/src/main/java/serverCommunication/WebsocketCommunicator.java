@@ -50,7 +50,7 @@ public class WebsocketCommunicator extends Endpoint {
                 switch (messageType) {
                     case LOAD_GAME -> {
                         ServerLoadGameMessage msg = (ServerLoadGameMessage) serverMessage;
-                        setGameData(msg.getGameData());
+                        setGameData(msg.getGame());
                     }
                     case ERROR -> {
                         ServerErrorMessage msg = (ServerErrorMessage) serverMessage;
@@ -58,7 +58,7 @@ public class WebsocketCommunicator extends Endpoint {
                     }
                     case NOTIFICATION -> {
                         ServerNotification msg = (ServerNotification) serverMessage;
-                        System.out.println(msg.getServerMessageType() + ": " + msg.getNotification());
+                        System.out.println(msg.getServerMessageType() + ": " + msg.getMessage());
                     }
                 }
             }

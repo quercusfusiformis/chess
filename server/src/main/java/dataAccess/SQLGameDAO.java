@@ -151,13 +151,13 @@ public class SQLGameDAO implements GameDAO {
     }
 
     @Override
-    public void updatePlayerInGame(int gameID, String username, String color) throws IllegalArgumentException, DataAccessException {
+    public void updatePlayerInGame(int gameID, String username, ChessGame.TeamColor color) throws IllegalArgumentException, DataAccessException {
         GameData toUpdate = getGame(gameID);
         if (toUpdate == null) { throw new DataAccessException("Error: bad request"); }
         else {
-            if (color.equalsIgnoreCase("WHITE")) {
+            if (color.equals(ChessGame.TeamColor.WHITE)) {
                 updateGame(toUpdate.gameID(), username, toUpdate.blackUsername(), toUpdate.gameName(), toUpdate.game());
-            } else if (color.equalsIgnoreCase("BLACK")) {
+            } else if (color.equals(ChessGame.TeamColor.BLACK)) {
                 updateGame(toUpdate.gameID(), toUpdate.whiteUsername(), username, toUpdate.gameName(), toUpdate.game());
             } else {
                 throw new IllegalArgumentException("Error: invalid color parameter");
@@ -166,7 +166,7 @@ public class SQLGameDAO implements GameDAO {
     }
 
     @Override
-    public boolean colorFreeInGame(String color, int gameID) throws DataAccessException {
+    public boolean colorFreeInGame(ChessGame.TeamColor color, int gameID) throws DataAccessException {
         if (gameExists(gameID)) {
             GameData gameToCheck = getGame(gameID);
             return gameToCheck.isColorAvailable(color);
@@ -177,7 +177,7 @@ public class SQLGameDAO implements GameDAO {
     }
 
     @Override
-    public void joinGameAsPlayer(int gameID, String username, String color) throws DataAccessException {
+    public void joinGameAsPlayer(int gameID, String username, ChessGame.TeamColor color) throws DataAccessException {
         boolean colorFree;
         try {
             colorFree = colorFreeInGame(color, gameID);
@@ -193,16 +193,16 @@ public class SQLGameDAO implements GameDAO {
         }
     }
 
-    public boolean isPlayerColor(int gameID, String username, String color) throws DataAccessException {
+    public boolean isPlayerColor(int gameID, String username, ChessGame.TeamColor color) throws DataAccessException {
         if (gameExists(gameID)) {
             GameData gameToCheck = getGame(gameID);
             if (color == null) { throw new DataAccessException("Error: bad request"); }
-            if (color.equalsIgnoreCase("WHITE")) {
+            if (color.equals(ChessGame.TeamColor.WHITE)) {
                 String whiteUsername = gameToCheck.whiteUsername();
                 if (whiteUsername != null) {
                     return whiteUsername.equals(username);
                 } else { return false; }
-            } else if (color.equalsIgnoreCase("BLACK")) {
+            } else if (color.equals(ChessGame.TeamColor.BLACK)) {
                 String blackUsername = gameToCheck.blackUsername();
                 if (blackUsername != null) {
                     return blackUsername.equals(username);
@@ -214,11 +214,11 @@ public class SQLGameDAO implements GameDAO {
         }
     }
 
-    public String getPlayerColor(int gameID, String username) throws DataAccessException {
-        if (isPlayerColor(gameID, username, "WHITE")) {
-            return "WHITE";
-        } else if (isPlayerColor(gameID, username, "BLACK")) {
-            return "BLACK";
+    public ChessGame.TeamColor getPlayerColor(int gameID, String username) throws DataAccessException {
+        if (isPlayerColor(gameID, username, ChessGame.TeamColor.WHITE)) {
+            return ChessGame.TeamColor.WHITE;
+        } else if (isPlayerColor(gameID, username, ChessGame.TeamColor.BLACK)) {
+            return ChessGame.TeamColor.BLACK;
         } else { return null; }
     }
 
@@ -235,6 +235,16 @@ public class SQLGameDAO implements GameDAO {
             String serializedGame = new Gson().toJson(game);
             updateGame(gameData.gameID(), gameData.whiteUsername(), gameData.blackUsername(), gameData.gameName(), serializedGame);
         }
+    }
 
+    public void setTeamTurnNull(int gameID) throws DataAccessException {
+        GameData gameData = getGame(gameID);
+        if (gameData == null) { throw new DataAccessException("Error: bad request");
+        } else {
+            ChessGame game = new Gson().fromJson(gameData.game(), ChessGame.class);
+            game.setTeamTurn(null);
+            String serializedGame = new Gson().toJson(game);
+            updateGame(gameData.gameID(), gameData.whiteUsername(), gameData.blackUsername(), gameData.gameName(), serializedGame);
+        }
     }
 }

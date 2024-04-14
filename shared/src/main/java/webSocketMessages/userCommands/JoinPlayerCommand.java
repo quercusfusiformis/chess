@@ -1,20 +1,22 @@
 package webSocketMessages.userCommands;
 
+import chess.ChessGame;
+
 import java.util.Objects;
 
 public class JoinPlayerCommand extends UserGameCommand {
-    private final String requestedColor;
-    private final int requestedGameID;
+    private final ChessGame.TeamColor playerColor;
+    private final int gameID;
 
-    public JoinPlayerCommand(String requestedColor, int requestedGameID, String authToken) {
+    public JoinPlayerCommand(int gameID, ChessGame.TeamColor playerColor, String authToken) {
         super(CommandType.JOIN_PLAYER, authToken);
-        this.requestedColor = requestedColor;
-        this.requestedGameID = requestedGameID;
+        this.gameID = gameID;
+        this.playerColor = playerColor;
     }
 
-    public String getRequestedColor() { return requestedColor; }
+    public ChessGame.TeamColor getPlayerColor() { return playerColor; }
 
-    public int getRequestedGameID() { return requestedGameID; }
+    public int getGameID() { return gameID; }
 
     @Override
     public boolean equals(Object o) {
@@ -22,11 +24,21 @@ public class JoinPlayerCommand extends UserGameCommand {
         if (o == null || getClass() != o.getClass()) return false;
         if (!super.equals(o)) return false;
         JoinPlayerCommand that = (JoinPlayerCommand) o;
-        return requestedGameID == that.requestedGameID && Objects.equals(requestedColor, that.requestedColor);
+        return gameID == that.gameID && Objects.equals(playerColor, that.playerColor);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), requestedColor, requestedGameID);
+        return Objects.hash(super.hashCode(), playerColor, gameID);
+    }
+
+    @Override
+    public String toString() {
+        return "JoinPlayerCommand{" +
+                "commandType=" + commandType +
+                ", gameID=" + gameID +
+                ", playerColor='" + playerColor + '\'' +
+                ", authToken='" + authToken + '\'' +
+                '}';
     }
 }

@@ -12,6 +12,7 @@ import httpHandlers.GameHandler;
 import webSocketMessages.serverMessages.ServerMessage;
 import webSocketMessages.userCommands.*;
 import websocketService.WebsocketService;
+import logging.ServerLogger;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -91,40 +92,80 @@ public class Server {
     @OnWebSocketMessage
     public void onMessage(Session session, String message) throws Exception {
         UserGameCommand command = createCommandSerializer().fromJson(message, UserGameCommand.class);
+        ServerLogger.logUserCommand(command);
         switch (command.getCommandType()) {
             case JOIN_PLAYER -> {
                 JoinPlayerCommand jpCommand = (JoinPlayerCommand) command;
-                changeSessionGameID(session, jpCommand.getRequestedGameID());
-                ServerMessage joinMessage = wsService.joinGameAsPlayer(jpCommand.getRequestedGameID(), jpCommand.getAuthString());
-                sendServerMessageToOtherPlayers(session, joinMessage);
-                ServerMessage loadGameMessage = wsService.getGame(jpCommand.getRequestedGameID());
-                sendServerMessageToGame(jpCommand.getRequestedGameID(), loadGameMessage);
-            } case JOIN_OBSERVER -> {
+                int joinGameID = jpCommand.getGameID();
+                changeSessionGameID(session, joinGameID);
+                ServerMessage joinMessage = wsService.joinGameAsPlayer(joinGameID, jpCommand.getPlayerColor(), jpCommand.getAuthString());
+                if (joinMessage.getServerMessageType().equals(ServerMessage.ServerMessageType.ERROR)) {
+                    sendServerMessageToSession(session, joinMessage);
+                    ServerLogger.logServerMessage(joinMessage, "session");
+                } else {
+                    sendServerMessageToOtherPlayers(session, joinMessage);
+                    ServerLogger.logServerMessage(joinMessage, "other game players");
+                    ServerMessage loadGameMessage = wsService.getGame(joinGameID);
+                    sendServerMessageToSession(session, loadGameMessage);
+                    ServerLogger.logServerMessage(loadGameMessage, "game " + joinGameID);
+                }
+            }
+            case JOIN_OBSERVER -> {
                 JoinObserverCommand joCommand = (JoinObserverCommand) command;
-                changeSessionGameID(session, joCommand.getRequestedGameID());
-                ServerMessage joinMessage = wsService.joinGameAsObserver(joCommand.getRequestedGameID(), joCommand.getAuthString());
-                sendServerMessageToOtherPlayers(session, joinMessage);
-                ServerMessage loadGameMessage = wsService.getGame(joCommand.getRequestedGameID());
-                sendServerMessageToGame(joCommand.getRequestedGameID(), loadGameMessage);
-            } case LEAVE -> {
+                int observeGameID = joCommand.getGameID();
+                changeSessionGameID(session, observeGameID);
+                ServerMessage observeMessage = wsService.joinGameAsObserver(observeGameID, joCommand.getAuthString());
+                if (observeMessage.getServerMessageType().equals(ServerMessage.ServerMessageType.ERROR)) {
+                    sendServerMessageToSession(session, observeMessage);
+                    ServerLogger.logServerMessage(observeMessage, "session");
+                } else {
+                    sendServerMessageToOtherPlayers(session, observeMessage);
+                    ServerLogger.logServerMessage(observeMessage, "other game players");
+                    ServerMessage loadGameMessage = wsService.getGame(observeGameID);
+                    sendServerMessageToSession(session, loadGameMessage);
+                    ServerLogger.logServerMessage(loadGameMessage, "session" + observeGameID);
+                }
+            }
+            case LEAVE -> {
                 LeaveGameCommand lgCommand = (LeaveGameCommand) command;
                 int leaveGameID = getSessionGameID(session);
                 ServerMessage leaveMessage = wsService.leaveGame(leaveGameID, lgCommand.getAuthString());
-                sendServerMessageToOtherPlayers(session, leaveMessage);
-                ServerMessage loadGameMessage = wsService.getGame(leaveGameID);
-                sendServerMessageToOtherPlayers(session, loadGameMessage);
-                removeSession(session);
+                if (leaveMessage.getServerMessageType().equals(ServerMessage.ServerMessageType.ERROR)) {
+                    sendServerMessageToSession(session, leaveMessage);
+                    ServerLogger.logServerMessage(leaveMessage, "session");
+                } else {
+                    sendServerMessageToOtherPlayers(session, leaveMessage);
+                    ServerLogger.logServerMessage(leaveMessage, "other game players");
+                    removeSession(session);
+                }
             }
             case MAKE_MOVE -> {
                 MakeMoveCommand mmCommand = (MakeMoveCommand) command;
                 int moveGameID = getSessionGameID(session);
                 ServerMessage moveMessage = wsService.makeMove(moveGameID, mmCommand.getMove(), mmCommand.getAuthString());
-                sendServerMessageToOtherPlayers(session, moveMessage);
-                ServerMessage loadGameMessage = wsService.getGame(moveGameID);
-                sendServerMessageToGame(moveGameID, loadGameMessage);
+                if (moveMessage.getServerMessageType().equals(ServerMessage.ServerMessageType.ERROR)) {
+                    sendServerMessageToSession(session, moveMessage);
+                    ServerLogger.logServerMessage(moveMessage, "session");
+                } else {
+                    sendServerMessageToOtherPlayers(session, moveMessage);
+                    ServerLogger.logServerMessage(moveMessage, "other game players");
+                    ServerMessage loadGameMessage = wsService.getGame(moveGameID);
+                    sendServerMessageToGame(moveGameID, loadGameMessage);
+                    ServerLogger.logServerMessage(loadGameMessage, "game " + moveGameID);
+                }
+                // Add check and checkmate messaging
             }
             case RESIGN -> {
                 ResignGameCommand rgCommand = (ResignGameCommand) command;
+                int resignGameID = getSessionGameID(session);
+                ServerMessage resignMessage = wsService.resign(resignGameID, rgCommand.getAuthString());
+                if (resignMessage.getServerMessageType().equals(ServerMessage.ServerMessageType.ERROR)) {
+                    sendServerMessageToSession(session, resignMessage);
+                    ServerLogger.logServerMessage(resignMessage, "session");
+                } else {
+                    sendServerMessageToGame(resignGameID, resignMessage);
+                    ServerLogger.logServerMessage(resignMessage, "game " + resignGameID);
+                }
             }
         }
     }

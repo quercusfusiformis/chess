@@ -35,4 +35,13 @@ public class ServerErrorMessage extends ServerMessage {
     public int hashCode() {
         return Objects.hash(super.hashCode(), errorName, errorMessage);
     }
+
+    @Override
+    public String toString() {
+        return "ServerErrorMessage{" +
+                "serverMessageType=" + serverMessageType +
+                ", errorName='" + errorName + '\'' +
+                ", errorMessage='" + errorMessage + '\'' +
+                '}';
+    }
 }

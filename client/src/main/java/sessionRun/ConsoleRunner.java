@@ -4,6 +4,8 @@ import java.util.*;
 import java.io.InputStreamReader;
 import java.io.BufferedReader;
 import java.io.IOException;
+
+import chess.ChessGame;
 import requestRecords.*;
 import responseRecords.*;
 import serverCommunication.ServerFacade;
@@ -232,8 +234,8 @@ public class ConsoleRunner {
     }
 
     private void join(ArrayList<String> userArgs) throws CommunicationException {
-        String color;
-        if (userArgs.get(1) != null) { color = userArgs.get(1).toUpperCase();
+        ChessGame.TeamColor color;
+        if (userArgs.get(1) != null) { color = stringToTeamColor(userArgs.get(1));
         } else { color = null; }
         Integer requestedID = Integer.parseInt(userArgs.get(0));
         if (!gameListIDMap.containsKey(requestedID)) { throw new CommunicationException("Invalid game ID requested. List games and try again.\n"); }
@@ -243,6 +245,16 @@ public class ConsoleRunner {
         //     Actual implementation will be done via websockets in phase 6
         System.out.print("GameID: " + gameID + "\n");
         System.out.print(BoardToStringUtil.getBoardAll(BoardToStringUtil.getADefaultBoard()));
+    }
+
+    private ChessGame.TeamColor stringToTeamColor(String toColor) {
+        if (toColor.equalsIgnoreCase("WHITE")) {
+            return ChessGame.TeamColor.WHITE;
+        } else if (toColor.equalsIgnoreCase("BLACK")) {
+            return ChessGame.TeamColor.BLACK;
+        } else {
+            throw new RuntimeException("Invalid color");
+        }
     }
 
     private void observe(ArrayList<String> userArgs) throws CommunicationException {
