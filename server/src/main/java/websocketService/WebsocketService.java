@@ -20,10 +20,10 @@ public class WebsocketService {
                     if (requestedColor.equals(color)) {
                         joinMessage = new ServerNotification("User \"" + username + "\" has joined the game as the " + color + " player.");
                     } else {
-                        throw new DataAccessException("Bad request");
+                        throw new DataAccessException("Bad join as player request");
                     }
                 } else {
-                    throw new DataAccessException("Bad request");
+                    throw new DataAccessException("Bad join as player request");
                 }
             } else {
                 throw new DataAccessException("Unauthorized");
@@ -42,7 +42,7 @@ public class WebsocketService {
                 if (gameDAO.gameExists(gameID)) {
                     joinMessage = new ServerNotification("User \"" + username + "\" has joined the game as an observer.");
                 } else {
-                    throw new DataAccessException("Bad request");
+                    throw new DataAccessException("Bad join as observer request");
                 }
             } else {
                 throw new DataAccessException("Unauthorized");
@@ -66,16 +66,16 @@ public class WebsocketService {
                                 gameDAO.updatePlayerInGame(gameID, null, color);
                                 leaveMessage = new ServerNotification("Player \"" + username + "\" has left the game.");
                             } else {
-                                throw new DataAccessException("Bad request");
+                                throw new DataAccessException("Bad leave request");
                             }
                         } catch (IllegalArgumentException ex) {
-                            throw new DataAccessException("Bad request");
+                            throw new DataAccessException("Bad leave request");
                         }
                     } else {
                         leaveMessage = new ServerNotification("Observer \"" + username + "\" has left the game.");
                     }
                 } else {
-                    throw new DataAccessException("Bad request");
+                    throw new DataAccessException("Bad leave request");
                 }
             } else {
                 throw new DataAccessException("Unauthorized");
@@ -111,16 +111,16 @@ public class WebsocketService {
                                     ServerLogger.logger.info("After making move, currTeamTurn: " + gameDAO.getCurrTeamTurn(gameID));
                                 }
                             } else {
-                                throw new DataAccessException("Bad request");
+                                throw new DataAccessException("Bad move request");
                             }
                         } catch (IllegalArgumentException ex) {
-                            throw new DataAccessException("Bad request");
+                            throw new DataAccessException("Bad move request");
                         }
                     } else {
-                        throw new DataAccessException("Bad request");
+                        throw new DataAccessException("Bad move request");
                     }
                 } else {
-                    throw new DataAccessException("Bad request");
+                    throw new DataAccessException("Bad move request");
                 }
             } else {
                 throw new DataAccessException("Unauthorized");
@@ -152,16 +152,16 @@ public class WebsocketService {
                                     ServerLogger.logger.info("After resigning, currTeamTurn: " + gameDAO.getCurrTeamTurn(gameID));
                                 }
                             } else {
-                                throw new DataAccessException("Bad request");
+                                throw new DataAccessException("Bad resign request");
                             }
                         } catch (IllegalArgumentException ex) {
-                            throw new DataAccessException("Bad request");
+                            throw new DataAccessException("Bad resign request");
                         }
                     } else {
-                        throw new DataAccessException("Bad request");
+                        throw new DataAccessException("Bad resign request");
                     }
                 } else {
-                    throw new DataAccessException("Bad request");
+                    throw new DataAccessException("Bad resign request");
                 }
             } else {
                 throw new DataAccessException("Unauthorized");
