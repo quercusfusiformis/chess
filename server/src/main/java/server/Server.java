@@ -190,12 +190,6 @@ public class Server {
         return gsonBuilder.create();
     }
 
-    private void sendServerMessageAllSessions(ServerMessage message) throws Exception {
-        for (Integer currGameID: this.openSessionMap.keySet()) {
-            sendServerMessageToGame(currGameID, message);
-        }
-    }
-
     private void sendServerMessageToGame(int targetGameID, ServerMessage message) throws Exception {
         for (Session session: this.openSessionMap.get(targetGameID)) {
             sendServerMessageToSession(session, message);

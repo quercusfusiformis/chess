@@ -14,3 +14,4 @@ client/src/main/java/sessionRun/ClientOperationTest.java
 server/src/main/java/dataAccess/MemoryAuthDAO.java
 server/src/main/java/dataAccess/MemoryGameDAO.java
 server/src/main/java/dataAccess/MemoryUserDAO.java
+server/src/main/java/dataAccess/MemoryDatabaseManager.java
