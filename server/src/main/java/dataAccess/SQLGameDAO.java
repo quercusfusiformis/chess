@@ -9,6 +9,8 @@ import com.google.gson.Gson;
 import java.sql.Statement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+
+import logging.ServerLogger;
 import model.GameData;
 import chess.ChessGame;
 
@@ -28,7 +30,9 @@ public class SQLGameDAO implements GameDAO {
         try (var statement = DatabaseManager.getConnection().prepareStatement(
                 "INSERT INTO game (gameName, game) VALUES(?, ?)",
                 Statement.RETURN_GENERATED_KEYS)) {
-            String game = new Gson().toJson(new ChessGame());
+            ChessGame newGame = new ChessGame();
+            newGame.initialize();
+            String game = new Gson().toJson(newGame);
             statement.setString(1, gameName);
             statement.setString(2, game);
             statement.executeUpdate();
@@ -232,8 +236,20 @@ public class SQLGameDAO implements GameDAO {
             } catch (InvalidMoveException ex) {
                 throw new DataAccessException(ex.getClass().getName() + ": " + ex.getMessage());
             }
+            if (game.isInCheckmate(ChessGame.TeamColor.WHITE) || game.isInCheckmate(ChessGame.TeamColor.BLACK)) {
+                game.setTeamTurn(null);
+            }
             String serializedGame = new Gson().toJson(game);
             updateGame(gameData.gameID(), gameData.whiteUsername(), gameData.blackUsername(), gameData.gameName(), serializedGame);
+        }
+    }
+
+    public ChessGame.TeamColor getCurrTeamTurn(int gameID) throws DataAccessException {
+        GameData gameData = getGame(gameID);
+        if (gameData == null) { throw new DataAccessException("Error: bad request");
+        } else {
+            ChessGame game = new Gson().fromJson(gameData.game(), ChessGame.class);
+            return game.getTeamTurn();
         }
     }
 
@@ -242,8 +258,11 @@ public class SQLGameDAO implements GameDAO {
         if (gameData == null) { throw new DataAccessException("Error: bad request");
         } else {
             ChessGame game = new Gson().fromJson(gameData.game(), ChessGame.class);
+            ServerLogger.logger.info("Before setting teamTurn to null, game.getTeamTurn: " + game.getTeamTurn());
             game.setTeamTurn(null);
+            ServerLogger.logger.info("After setting teamTurn to null, game.getTeamTurn: " + game.getTeamTurn());
             String serializedGame = new Gson().toJson(game);
+            ServerLogger.logger.info(serializedGame);
             updateGame(gameData.gameID(), gameData.whiteUsername(), gameData.blackUsername(), gameData.gameName(), serializedGame);
         }
     }

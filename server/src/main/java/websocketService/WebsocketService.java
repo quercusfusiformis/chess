@@ -3,6 +3,7 @@ package websocketService;
 import chess.ChessGame;
 import chess.ChessMove;
 import dataAccess.*;
+import logging.ServerLogger;
 import webSocketMessages.serverMessages.*;
 
 public class WebsocketService {
@@ -16,7 +17,6 @@ public class WebsocketService {
                 String username = authDAO.getUsername(authToken);
                 if (gameDAO.gameExists(gameID)) {
                     ChessGame.TeamColor color = gameDAO.getPlayerColor(gameID, username);
-//                    if (requestedColor == null) { throw new DataAccessException("Bad request"); }
                     if (requestedColor.equals(color)) {
                         joinMessage = new ServerNotification("User \"" + username + "\" has joined the game as the " + color + " player.");
                     } else {
@@ -96,11 +96,20 @@ public class WebsocketService {
                     if (color != null) {
                         try {
                             if (gameDAO.isPlayerColor(gameID, username, color)) {
-                                gameDAO.makeMove(gameID, move);
-                                moveMessage = new ServerNotification("The " + color + " player \"" +
-                                        username + "\" moved a piece from position " +
-                                        move.getStartPosition().toString() + " to position " +
-                                        move.getEndPosition().toString() + ".");
+                                ChessGame.TeamColor currTeamTurn = gameDAO.getCurrTeamTurn(gameID);
+                                ServerLogger.logger.info("Before making move, currTeamTurn: " + currTeamTurn);
+                                if (currTeamTurn == null) {
+                                    throw new DataAccessException("Error: game is over");
+                                } else if (currTeamTurn != color) {
+                                    throw new DataAccessException("Error: cannot move on another player's turn");
+                                } else {
+                                    gameDAO.makeMove(gameID, move);
+                                    moveMessage = new ServerNotification("The " + color + " player \"" +
+                                            username + "\" moved a piece from position " +
+                                            move.getStartPosition().toString() + " to position " +
+                                            move.getEndPosition().toString() + ".");
+                                    ServerLogger.logger.info("After making move, currTeamTurn: " + gameDAO.getCurrTeamTurn(gameID));
+                                }
                             } else {
                                 throw new DataAccessException("Bad request");
                             }
@@ -132,9 +141,16 @@ public class WebsocketService {
                     if (color != null) {
                         try {
                             if (gameDAO.isPlayerColor(gameID, username, color)) {
-                                gameDAO.setTeamTurnNull(gameID);
-                                resignMessage = new ServerNotification("The " + color + " player \"" +
+                                ChessGame.TeamColor currTeamTurn = gameDAO.getCurrTeamTurn(gameID);
+                                ServerLogger.logger.info("Before resigning, currTeamTurn: " + currTeamTurn);
+                                if (currTeamTurn == null) {
+                                    throw new DataAccessException("Error: game is over");
+                                } else {
+                                    gameDAO.setTeamTurnNull(gameID);
+                                    resignMessage = new ServerNotification("The " + color + " player \"" +
                                         username + "\" resigned. ");
+                                    ServerLogger.logger.info("After resigning, currTeamTurn: " + gameDAO.getCurrTeamTurn(gameID));
+                                }
                             } else {
                                 throw new DataAccessException("Bad request");
                             }

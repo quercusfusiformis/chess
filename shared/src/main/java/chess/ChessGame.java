@@ -15,7 +15,7 @@ public class ChessGame {
     ChessBoard board;
     TeamColor teamTurn;
 
-    public ChessGame() {
+    public void initialize() {
         this.board = new ChessBoard();
         this.board.resetBoard();
         this.teamTurn = TeamColor.WHITE;
@@ -90,10 +90,16 @@ public class ChessGame {
         HashSet<ChessMove> validMoves = (HashSet<ChessMove>) validMoves(move.getStartPosition());
         if (validMoves.contains(move) && currPieceTeam == getTeamTurn()) {
             applyMove(move);
-            if (getTeamTurn() == TeamColor.WHITE) { setTeamTurn(TeamColor.BLACK); }
-            else { setTeamTurn(TeamColor.WHITE); }
+            if (getTeamTurn() == TeamColor.WHITE) {
+                setTeamTurn(TeamColor.BLACK);
+            }
+            else if (getTeamTurn() == TeamColor.BLACK) {
+                setTeamTurn(TeamColor.WHITE);
+            } else {
+                throw new InvalidMoveException("Error: game is over");
+            }
         }
-        else { throw new InvalidMoveException("Invalid move."); }
+        else { throw new InvalidMoveException("Error: invalid move"); }
     }
 
     public void applyMove(ChessMove move) {
