@@ -1,10 +1,10 @@
 package ui;
 
+import java.util.Collection;
+import java.util.ArrayList;
 import static ui.EscapeSequences.*;
-import chess.ChessGame;
-import chess.ChessBoard;
-import chess.ChessPiece;
-import chess.ChessPosition;
+
+import chess.*;
 
 public final class BoardToStringUtil {
     private BoardToStringUtil() {}
@@ -23,9 +23,12 @@ public final class BoardToStringUtil {
     private static final String boardEdgeColor = SET_BG_COLOR_BROWN;
     private static final String boardSpaceWhiteColor = SET_BG_COLOR_LIGHT_GREY;
     private static final String boardSpaceBlackColor = SET_BG_COLOR_DARK_GREY;
+    private static final String boardSpaceMainHighlightedColor = SET_BG_COLOR_RED;
+    private static final String boardSpaceWhiteHighlightedColor = SET_BG_COLOR_GREEN;
+    private static final String boardSpaceBlackHighlightedColor = SET_BG_COLOR_DARK_GREEN;
     private static final String boardSeparatorColor = RESET_BG_COLOR;
 
-    public static String getBoardAll(ChessBoard board) {
+    public static String getBoardBothSides(ChessBoard board) {
         return getBoard(board, ChessGame.TeamColor.BLACK) +
                 getBlankFullRow(boardSeparatorColor) +
                 getBoard(board, ChessGame.TeamColor.WHITE);
@@ -33,9 +36,24 @@ public final class BoardToStringUtil {
 
     public static String getBoard(ChessBoard board, ChessGame.TeamColor callerColor) {
         return getHeader(callerColor) +
-                getBoardRows(board, callerColor) +
+                getBoardRows(board, callerColor, null, new ArrayList<>()) +
                 getFooter() +
                 resetTerminalColors();
+    }
+
+    public static String getHighlightedBoard(ChessBoard board, ChessGame.TeamColor callerColor, ChessPosition pos , Collection<ChessPosition> toHighlight) {
+        return getHeader(callerColor) +
+                getBoardRows(board, callerColor, pos, toHighlight) +
+                getFooter() +
+                resetTerminalColors();
+    }
+
+    public static Collection<ChessPosition> getMoveResults(Collection<ChessMove> moves) {
+        ArrayList<ChessPosition> ends = new ArrayList<>();
+        for (ChessMove move: moves) {
+            ends.add(move.getEndPosition());
+        }
+        return ends;
     }
 
     private static String getHeader(ChessGame.TeamColor callerColor) {
@@ -57,7 +75,7 @@ public final class BoardToStringUtil {
         return returnStringBuilder.toString();
     }
 
-    private static String getBoardRows(ChessBoard board, ChessGame.TeamColor callerColor) {
+    private static String getBoardRows(ChessBoard board, ChessGame.TeamColor callerColor, ChessPosition pos, Collection<ChessPosition> toHighlight) {
         StringBuilder returnStringBuilder = new StringBuilder();
 
         int spaceColorDesignator;
@@ -73,13 +91,27 @@ public final class BoardToStringUtil {
             colOrder = new int [] {8,7,6,5,4,3,2,1};
         }
 
+        ChessPosition mainPos = pos;
+        if (pos == null) { mainPos = new ChessPosition(0,0); }
+
         for(int i: rowOrder) {
             returnStringBuilder.append(getBoardLeftSide(i));
             ChessGame.TeamColor nextSpaceColor;
             if (i % 2 == spaceColorDesignator) { nextSpaceColor = ChessGame.TeamColor.WHITE; }
             else { nextSpaceColor = ChessGame.TeamColor.BLACK; }
             for (int j: colOrder) {
-                returnStringBuilder.append(getANSIForColor(nextSpaceColor));
+                ChessPosition currPos = new ChessPosition(i, j);
+                if (mainPos.equals(currPos)) {
+                    returnStringBuilder.append(boardSpaceMainHighlightedColor);
+                } else if (toHighlight.contains(currPos)) {
+                    if (nextSpaceColor.equals(ChessGame.TeamColor.WHITE)) {
+                        returnStringBuilder.append(boardSpaceWhiteHighlightedColor);
+                    } else if (nextSpaceColor.equals(ChessGame.TeamColor.BLACK)) {
+                        returnStringBuilder.append(boardSpaceBlackHighlightedColor);
+                    }
+                } else {
+                    returnStringBuilder.append(getANSIForColor(nextSpaceColor));
+                }
                 nextSpaceColor = getOppositeTeamColor(nextSpaceColor);
                 ChessPiece currPiece = board.getPiece(new ChessPosition(i, j));
                 if (!(currPiece == null)) {

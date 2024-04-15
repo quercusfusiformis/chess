@@ -1,13 +1,16 @@
 package serverCommunication;
 
+import chess.ChessBoard;
 import chess.ChessGame;
 import com.google.gson.Gson;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
 
+import model.GameData;
 import requestRecords.*;
 import responseRecords.*;
+import ui.BoardToStringUtil;
 import webSocketMessages.userCommands.*;
 
 public class ServerFacade {
@@ -78,23 +81,31 @@ public class ServerFacade {
             if (request.playerColor() != null) {
                 if (request.playerColor().equals(ChessGame.TeamColor.WHITE)) {
                     this.websocketCommunicator.sendCommand(new JoinPlayerCommand(request.gameID(), ChessGame.TeamColor.WHITE, authToken));
+                    this.websocketCommunicator.setPlayerGameColor(ChessGame.TeamColor.WHITE);
                 } else if (request.playerColor().equals(ChessGame.TeamColor.BLACK)) {
                     this.websocketCommunicator.sendCommand(new JoinPlayerCommand(request.gameID(), ChessGame.TeamColor.BLACK, authToken));
-                } else {
-                    throw new CommunicationException("Invalid color option");
+                    this.websocketCommunicator.setPlayerGameColor(ChessGame.TeamColor.BLACK);
                 }
             } else {
-                this.websocketCommunicator.sendCommand(new JoinObserverCommand(request.gameID() - 1, authToken));
+                this.websocketCommunicator.sendCommand(new JoinObserverCommand(request.gameID(), authToken));
+                this.websocketCommunicator.setPlayerGameColor(null);
             }
         } catch (Exception ex) { throw new CommunicationException(ex.getMessage()); }
     }
 
-    public String redrawBoard() { return ""; }
+    public String redrawBoard() throws CommunicationException {
+        ChessBoard board = new Gson().fromJson(getWSSessionGame().game(), ChessGame.class).getBoard();
+        ChessGame.TeamColor color = getWSSessionGamePlayerColor();
+        return BoardToStringUtil.getBoard(board, color);
+    }
 
-    public void leaveGame(int gameID, String authToken) {
+    public void leaveGame(String authToken) throws CommunicationException {
         try {
+            int gameID = getWSSessionGame().gameID();
             this.websocketCommunicator.ensureOpenSession();
             this.websocketCommunicator.sendCommand(new LeaveGameCommand(gameID, authToken));
+            this.websocketCommunicator.setGameData(null);
+            this.websocketCommunicator.setPlayerGameColor(null);
             this.websocketCommunicator.closeSession();
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -114,12 +125,30 @@ public class ServerFacade {
         } catch (Exception ex) { throw new CommunicationException(ex.getMessage()); }
     }
 
-    public void sendCommand(UserGameCommand command) {
+    private void sendCommand(UserGameCommand command) {
         this.websocketCommunicator.ensureOpenSession();
         try {
             this.websocketCommunicator.sendCommand(command);
         } catch (IOException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    private GameData getWSSessionGame() throws CommunicationException {
+        GameData gameData = websocketCommunicator.getGameData();
+        if (gameData != null) {
+            return gameData;
+        } else {
+            throw new CommunicationException("Websocket game is null");
+        }
+    }
+
+    private ChessGame.TeamColor getWSSessionGamePlayerColor() throws CommunicationException {
+        ChessGame.TeamColor playerGameColor = websocketCommunicator.getPlayerGameColor();
+        if (playerGameColor != null) {
+            return playerGameColor;
+        } else {
+            throw new CommunicationException("Websocket game player color is null");
         }
     }
 }

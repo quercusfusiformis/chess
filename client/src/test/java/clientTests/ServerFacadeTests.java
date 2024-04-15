@@ -1,11 +1,9 @@
 package clientTests;
 
-import chess.ChessGame;
 import org.junit.jupiter.api.*;
 import static org.junit.jupiter.api.Assertions.*;
-
 import java.util.ArrayList;
-
+import chess.ChessGame;
 import requestRecords.CreateGameRequest;
 import requestRecords.JoinGameRequest;
 import requestRecords.LoginRequest;
@@ -14,7 +12,6 @@ import responseRecords.ListGameInfo;
 import server.Server;
 import serverCommunication.ServerFacade;
 import serverCommunication.CommunicationException;
-import webSocketMessages.userCommands.*;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class ServerFacadeTests {
@@ -200,38 +197,6 @@ public class ServerFacadeTests {
         String fozzieAuth = facade.register(fozzieRRequest).authToken();
         int gameID = facade.createGame(new CreateGameRequest("Muppet Showdown"), fozzieAuth).gameID();
         facade.joinGame(new JoinGameRequest(ChessGame.TeamColor.WHITE, gameID), kermitAuth);
-        facade.leaveGame(gameID, kermitAuth);
-    }
-
-    @Test
-    @Order(16)
-    @DisplayName("notification test")
-    public void notification() throws CommunicationException {
-        String kermitAuth = facade.register(new RegisterRequest("kermit", "beinggreenisprettycoolngl",
-                "kermit@muppets.com")).authToken();
-        facade.createGame(new CreateGameRequest("newgame"), kermitAuth);
-        facade.listGames(kermitAuth);
-        facade.sendCommand(new JoinObserverCommand(1, kermitAuth));
-    }
-
-    @Test
-    public void waitInGame() throws CommunicationException {
-        facade.clear();
-        String kermitAuth = facade.register(new RegisterRequest("kermit", "beinggreenisprettycoolngl",
-                "kermit@muppets.com")).authToken();
-        facade.createGame(new CreateGameRequest("newgame"), kermitAuth);
-        facade.listGames(kermitAuth);
-        facade.joinGame(new JoinGameRequest(ChessGame.TeamColor.WHITE, 1), kermitAuth);
-        facade.sendCommand(new JoinObserverCommand(1, kermitAuth));
-        while (true) {}
-    }
-
-    @Test
-    public void joinGameAndLeave() throws CommunicationException {
-        String fozzieAuth = facade.register(fozzieRRequest).authToken();
-        facade.listGames(fozzieAuth);
-//        facade.joinGame(new JoinGameRequest("BLACK", 1), fozzieAuth);
-        facade.sendCommand(new JoinObserverCommand(1, fozzieAuth));
-        facade.leaveGame(1, fozzieAuth);
+        facade.leaveGame(kermitAuth);
     }
 }

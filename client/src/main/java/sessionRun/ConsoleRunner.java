@@ -4,21 +4,23 @@ import java.util.*;
 import java.io.InputStreamReader;
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
 import chess.ChessGame;
 import requestRecords.*;
 import responseRecords.*;
 import serverCommunication.ServerFacade;
 import serverCommunication.CommunicationException;
-import ui.BoardToStringUtil;
 
 public class ConsoleRunner {
     private final ServerFacade server = new ServerFacade(3676, "localhost:");
+    private boolean running = true;
     private boolean userAuthorized = false;
     private String userAuthToken;
-    private boolean running = true;
+    private boolean runningWSSession = false;
     private boolean printLoggedOutMenu = true;
     private boolean printLoggedInMenu = false;
+    private boolean printWSSessionMenu = false;
     private final HashMap<Integer, Integer> gameListIDMap = new HashMap<>();
 
     public void run() {
@@ -26,6 +28,9 @@ public class ConsoleRunner {
             if (this.printLoggedOutMenu) {
                 printLoggedOutMenu();
                 this.printLoggedOutMenu = false;
+            } else if (this.printWSSessionMenu) {
+                printWSSessionMenu();
+                this.printWSSessionMenu = false;
             } else if (this.printLoggedInMenu) {
                 printLoggedInMenu();
                 this.printLoggedInMenu = false;
@@ -35,7 +40,11 @@ public class ConsoleRunner {
             try { userInput = (ArrayList<String>) promptUserForInput();
             } catch (IOException ex) { System.out.print("An error occurred. Please try again"); }
 
-            parseCommands(userInput);
+            if (!this.runningWSSession) {
+                parseCommands(userInput);
+            } else {
+                parseWSCommands(userInput);
+            }
         }
     }
 
@@ -73,8 +82,8 @@ public class ConsoleRunner {
                 
                 %s OPTIONS:
                     showboard - show board
-                    showmoves - show available moves
-                    move - move a piece
+                    showmoves <COORD> - show available moves for a piece at a position on the board
+                    move <COORD> <COORD> - move a piece
                     leave - leave game
                     resign - forfeit game
                     help - lists available commands
@@ -91,8 +100,13 @@ public class ConsoleRunner {
     private String getPrompt() { return String.format("[%s] >> ", getUserAuthStatusAsString(this.userAuthorized)); }
 
     private String getUserAuthStatusAsString(boolean userAuthorized) {
-        if (userAuthorized) { return "LOGGED_IN"; }
-        else { return "LOGGED_OUT"; }
+        if (!userAuthorized) {
+            return "LOGGED_OUT";
+        } else if (this.runningWSSession) {
+            return "LOGGED_IN--GAME";
+        } else {
+            return "LOGGED_IN";
+        }
     }
 
     private static Collection<String> getUserInput() throws IOException {
@@ -172,6 +186,78 @@ public class ConsoleRunner {
                 if (invalidInput) {
                     System.out.print("Invalid command input. Type help and format your command according to the menu.\n");
                 }
+            } catch (CommunicationException | InterruptedException ex) {
+                System.out.print("An error occurred while communicating with the server: " + ex.getMessage() + "\n");
+            }
+        } else { System.out.print(unrecognizedCommandString); }
+    }
+
+    private void parseWSCommands(ArrayList<String> userInput) {
+        String unrecognizedCommandString = "Unrecognized command. Type help to list available commands.\n";
+        if (!userInput.isEmpty()) {
+            ArrayList<String> validCommands = new ArrayList<>(Arrays.asList("showboard", "showmoves", "move", "leave",
+                    "resign", "help"));
+            String firstCommand = userInput.getFirst().toLowerCase();
+            if (firstCommand.isEmpty()) { return; }
+            else if (!validCommands.contains(firstCommand)) {
+                System.out.print(unrecognizedCommandString);
+                return;
+            }
+            ArrayList<String> userArgs;
+            userArgs = userInput;
+            userArgs.removeFirst();
+            ArrayList<String> validate;
+            try {
+                boolean invalidInput = false;
+                switch (firstCommand) {
+                    case "showboard" -> {
+                        if (userArgs.isEmpty()) {
+                            redrawBoard();
+                        } else {
+                            invalidInput = true;
+                        }
+                    }
+                    case "showmoves" -> {
+                        validate = new ArrayList<>(List.of("str"));
+                        if (isValidInput(userArgs, validate)) {
+                            highlightLegalMoves(userArgs);
+                        } else {
+                            invalidInput = true;
+                        }
+                    }
+                    case "move" -> {
+                        validate = new ArrayList<>(Arrays.asList("str", "str"));
+                        if (isValidInput(userArgs, validate)) {
+                            makeMove(userArgs);
+                        } else {
+                            invalidInput = true;
+                        }
+                    }
+                    case "resign" -> {
+                        if (userArgs.isEmpty()) {
+                            resign();
+                        } else {
+                            invalidInput = true;
+                        }
+                    }
+                    case "leave" -> {
+                        if (userArgs.isEmpty()) {
+                            leaveGame();
+                        } else {
+                            invalidInput = true;
+                        }
+                    }
+                    case "help" -> {
+                        if (userArgs.isEmpty()) {
+                            help();
+                        } else {
+                            invalidInput = true;
+                        }
+                    }
+                }
+                if (invalidInput) {
+                    System.out.print("Invalid command input. Type help and format your command according to the menu.\n");
+                }
             } catch (CommunicationException ex) {
                 System.out.print("An error occurred while communicating with the server: " + ex.getMessage() + "\n");
             }
@@ -233,7 +319,7 @@ public class ConsoleRunner {
         System.out.print("New game \"" + userArgs.getFirst() + "\"\n");
     }
 
-    private void join(ArrayList<String> userArgs) throws CommunicationException {
+    private void join(ArrayList<String> userArgs) throws CommunicationException, InterruptedException {
         ChessGame.TeamColor color;
         if (userArgs.get(1) != null) { color = stringToTeamColor(userArgs.get(1));
         } else { color = null; }
@@ -241,23 +327,23 @@ public class ConsoleRunner {
         if (!gameListIDMap.containsKey(requestedID)) { throw new CommunicationException("Invalid game ID requested. List games and try again.\n"); }
         int gameID = this.gameListIDMap.get(requestedID);
         server.joinGame(new JoinGameRequest(color, gameID), this.userAuthToken);
-        // Default board printing for phase 5
-        //     Actual implementation will be done via websockets in phase 6
-        System.out.print("GameID: " + gameID + "\n");
-        System.out.print(BoardToStringUtil.getBoardAll(BoardToStringUtil.getADefaultBoard()));
+        TimeUnit.SECONDS.sleep(2);
+        redrawBoard();
+        this.runningWSSession = true;
+        this.printWSSessionMenu = true;
     }
 
-    private ChessGame.TeamColor stringToTeamColor(String toColor) {
+    private ChessGame.TeamColor stringToTeamColor(String toColor) throws CommunicationException {
         if (toColor.equalsIgnoreCase("WHITE")) {
             return ChessGame.TeamColor.WHITE;
         } else if (toColor.equalsIgnoreCase("BLACK")) {
             return ChessGame.TeamColor.BLACK;
         } else {
-            throw new RuntimeException("Invalid color");
+            throw new CommunicationException("Invalid color");
         }
     }
 
-    private void observe(ArrayList<String> userArgs) throws CommunicationException {
+    private void observe(ArrayList<String> userArgs) throws CommunicationException, InterruptedException {
         join(new ArrayList<>(Arrays.asList(userArgs.getFirst(), null)));
     }
 
@@ -274,19 +360,28 @@ public class ConsoleRunner {
     }
 
     private void help() {
-        if (!this.userAuthorized) { printLoggedOutMenu();
+        if (!this.userAuthorized) {
+            printLoggedOutMenu();
+        } else if (this.runningWSSession) {
+            printWSSessionMenu();
         } else { printLoggedInMenu(); }
     }
 
-    private void redrawBoard() {}
+    private void redrawBoard() throws CommunicationException {
+        System.out.println(server.redrawBoard());
+    }
 
-    private void leaveGame() {}
+    private void leaveGame() throws CommunicationException {
+        server.leaveGame(this.userAuthToken);
+        this.runningWSSession = false;
+        System.out.println("Left game.\n");
+    }
 
-    private void makeMove() {}
+    private void makeMove(ArrayList<String> userArgs) {}
 
     private void resign() {}
 
-    private void highlightLegalMoves() {}
+    private void highlightLegalMoves(ArrayList<String> userArgs) {}
 
     private void setAuthorization(String authToken) {
         this.userAuthToken = authToken;

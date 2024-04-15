@@ -1,5 +1,6 @@
 package serverCommunication;
 
+import chess.ChessGame;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonDeserializer;
@@ -16,6 +17,7 @@ public class WebsocketCommunicator extends Endpoint {
     private final URI connectURI;
     private Session session;
     private GameData gameData;
+    private ChessGame.TeamColor playerGameColor;
 
     public WebsocketCommunicator(int serverPort, String urlStem) {
         try {
@@ -25,7 +27,13 @@ public class WebsocketCommunicator extends Endpoint {
         }
     }
 
-    private void setGameData(GameData gameData) { this.gameData = gameData; }
+    public void setGameData(GameData gameData) { this.gameData = gameData; }
+
+    public GameData getGameData() { return this.gameData; }
+
+    public void setPlayerGameColor(ChessGame.TeamColor playerGameColor) { this.playerGameColor = playerGameColor; }
+
+    public ChessGame.TeamColor getPlayerGameColor() { return this.playerGameColor; }
 
     public void ensureOpenSession() {
         if (this.session == null) { initalizeSession();
