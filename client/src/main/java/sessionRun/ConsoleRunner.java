@@ -437,7 +437,19 @@ public class ConsoleRunner {
     }
 
     private void resign() throws CommunicationException {
-        server.resign(this.userAuthToken);
+        boolean confirmedQuit = false;
+        System.out.print("Enter y to confirm resign, anything else to cancel: ");
+        try {
+            ArrayList<String> confirm = (ArrayList<String>) getUserInput();
+            if (confirm.getFirst().equalsIgnoreCase("y") && confirm.size() == 1) {
+                confirmedQuit = true;
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        if (confirmedQuit) {
+            server.resign(this.userAuthToken);
+        }
     }
 
     private void highlightLegalMoves(ArrayList<String> userArgs) throws CommunicationException {
