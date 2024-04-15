@@ -1,6 +1,5 @@
 package serverCommunication;
 
-import chess.ChessGame;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonDeserializer;
@@ -8,7 +7,7 @@ import javax.websocket.*;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-
+import chess.ChessGame;
 import model.GameData;
 import webSocketMessages.userCommands.*;
 import webSocketMessages.serverMessages.*;
@@ -66,7 +65,8 @@ public class WebsocketCommunicator extends Endpoint {
                     }
                     case NOTIFICATION -> {
                         ServerNotification msg = (ServerNotification) serverMessage;
-                        System.out.println(msg.getServerMessageType() + ": " + msg.getMessage());
+                        System.out.print("\r                    \r");
+                        System.out.print(msg.getServerMessageType() + ": " + msg.getMessage() + "\n");
                     }
                 }
             }

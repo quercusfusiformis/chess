@@ -1,15 +1,10 @@
 package serverCommunication;
 
-import chess.ChessBoard;
-import chess.ChessGame;
-import chess.ChessPiece;
-import chess.ChessPosition;
 import com.google.gson.Gson;
-
+import java.util.Collection;
 import java.io.IOException;
 import java.net.HttpURLConnection;
-import java.util.Collection;
-
+import chess.*;
 import model.GameData;
 import requestRecords.*;
 import responseRecords.*;
@@ -115,9 +110,28 @@ public class ServerFacade {
         }
     }
 
-    public void makeMove() {}
+    public void makeMove(ChessMove move, String authToken) throws CommunicationException {
+        GameData game = getWSSessionGame();
+        ChessGame.TeamColor color = getWSSessionGamePlayerColor();
+        if (color != null) {
+            try {
+                this.websocketCommunicator.sendCommand(new MakeMoveCommand(game.gameID(), move, authToken));
+            } catch (IOException ex) {
+                throw new CommunicationException(ex.getMessage());
+            }
+        } else {
+            throw new CommunicationException("Cannot make a move as an observer");
+        }
+    }
 
-    public void resign() {}
+    public void resign(String authToken) throws CommunicationException {
+        int gameID = getWSSessionGame().gameID();
+        try {
+            this.websocketCommunicator.sendCommand(new ResignGameCommand(gameID, authToken));
+        } catch (IOException ex) {
+            throw new CommunicationException(ex.getMessage());
+        }
+    }
 
     public String highlightLegalMoves(ChessPosition position) throws CommunicationException {
         ChessBoard board = new Gson().fromJson(getWSSessionGame().game(), ChessGame.class).getBoard();
@@ -137,15 +151,6 @@ public class ServerFacade {
             HttpURLConnection connection = this.httpCommunicator.makeHTTPRequest("/db", "DELETE", "");
             if (!(HttpCommunicator.hasGoodResponseCode(connection))) { HttpCommunicator.throwResponseError(connection); }
         } catch (Exception ex) { throw new CommunicationException(ex.getMessage()); }
-    }
-
-    private void sendCommand(UserGameCommand command) {
-        this.websocketCommunicator.ensureOpenSession();
-        try {
-            this.websocketCommunicator.sendCommand(command);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
     }
 
     private GameData getWSSessionGame() throws CommunicationException {

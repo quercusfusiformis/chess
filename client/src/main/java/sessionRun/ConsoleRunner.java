@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
 import chess.ChessGame;
+import chess.ChessMove;
 import chess.ChessPosition;
 import requestRecords.*;
 import responseRecords.*;
@@ -38,6 +39,11 @@ public class ConsoleRunner {
             }
 
             ArrayList<String> userInput = new ArrayList<>();
+            try {
+                TimeUnit.MILLISECONDS.sleep(250);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
             try { userInput = (ArrayList<String>) promptUserForInput();
             } catch (IOException ex) { System.out.print("An error occurred. Please try again"); }
 
@@ -328,7 +334,7 @@ public class ConsoleRunner {
         if (!gameListIDMap.containsKey(requestedID)) { throw new CommunicationException("Invalid game ID requested. List games and try again.\n"); }
         int gameID = this.gameListIDMap.get(requestedID);
         server.joinGame(new JoinGameRequest(color, gameID), this.userAuthToken);
-        TimeUnit.SECONDS.sleep(2);
+        TimeUnit.MILLISECONDS.sleep(250);
         redrawBoard();
         this.runningWSSession = true;
         this.printWSSessionMenu = true;
@@ -379,7 +385,16 @@ public class ConsoleRunner {
         System.out.println("Left game.\n");
     }
 
-    private void makeMove(ArrayList<String> userArgs) {}
+    private void makeMove(ArrayList<String> userArgs) throws CommunicationException {
+        String movePosStr = userArgs.getFirst();
+        String endPosStr = userArgs.getLast();
+        if (isValidCoord(movePosStr) && isValidCoord(endPosStr)) {
+            ChessPosition movePos = coordToPosition(movePosStr);
+            ChessPosition endPos = coordToPosition(endPosStr);
+            ChessMove move = new ChessMove(movePos, endPos, null);
+            server.makeMove(move, this.userAuthToken);
+        }
+    }
 
     private boolean isValidCoord(String coord) {
         boolean isValid = false;
@@ -424,13 +439,14 @@ public class ConsoleRunner {
         return letterVal;
     }
 
-    private void resign() {}
+    private void resign() throws CommunicationException {
+        server.resign(this.userAuthToken);
+    }
 
     private void highlightLegalMoves(ArrayList<String> userArgs) throws CommunicationException {
         String posString = userArgs.getFirst();
         if (isValidCoord(posString)) {
             ChessPosition pos = coordToPosition(posString);
-            System.out.println(pos);
             System.out.println(server.highlightLegalMoves(pos));
         } else {
             throw new CommunicationException("Incorrect coordinate formatting (a5, e6, etc)");

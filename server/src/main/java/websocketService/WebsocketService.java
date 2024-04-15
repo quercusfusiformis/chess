@@ -2,6 +2,7 @@ package websocketService;
 
 import chess.ChessGame;
 import chess.ChessMove;
+import chess.ChessPosition;
 import dataAccess.*;
 import logging.ServerLogger;
 import webSocketMessages.serverMessages.*;
@@ -106,8 +107,8 @@ public class WebsocketService {
                                     gameDAO.makeMove(gameID, move);
                                     moveMessage = new ServerNotification("The " + color + " player \"" +
                                             username + "\" moved a piece from position " +
-                                            move.getStartPosition().toString() + " to position " +
-                                            move.getEndPosition().toString() + ".");
+                                            positionToCoord(move.getStartPosition()) + " to position " +
+                                            positionToCoord(move.getEndPosition()) + ".");
                                     ServerLogger.logger.info("After making move, currTeamTurn: " + gameDAO.getCurrTeamTurn(gameID));
                                 }
                             } else {
@@ -178,5 +179,22 @@ public class WebsocketService {
         } catch (DataAccessException ex) {
             return new ServerErrorMessage(ex);
         }
+    }
+
+    private static String positionToCoord(ChessPosition position) {
+        int toLetter = position.getColumn();
+        String letter = "x";
+        switch (toLetter) {
+            case 1 -> letter = "a";
+            case 2 -> letter = "b";
+            case 3 -> letter = "c";
+            case 4 -> letter = "d";
+            case 5 -> letter = "e";
+            case 6 -> letter = "f";
+            case 7 -> letter = "g";
+            case 8 -> letter = "h";
+        }
+        int number = position.getRow();
+        return letter + number;
     }
 }
