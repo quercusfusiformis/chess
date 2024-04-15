@@ -8,7 +8,9 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import chess.ChessGame;
+import chess.ChessBoard;
 import model.GameData;
+import ui.BoardToStringUtil;
 import webSocketMessages.userCommands.*;
 import webSocketMessages.serverMessages.*;
 
@@ -58,7 +60,10 @@ public class WebsocketCommunicator extends Endpoint {
                 switch (messageType) {
                     case LOAD_GAME -> {
                         ServerLoadGameMessage msg = (ServerLoadGameMessage) serverMessage;
-                        setGameData(msg.getGame());
+                        GameData gameData = msg.getGame();
+                        setGameData(gameData);
+                        ChessBoard board = new Gson().fromJson(gameData.game(), ChessGame.class).getBoard();
+                        System.out.println(BoardToStringUtil.getBoard(board, playerGameColor));
                     }
                     case ERROR -> {
                         ServerErrorMessage msg = (ServerErrorMessage) serverMessage;

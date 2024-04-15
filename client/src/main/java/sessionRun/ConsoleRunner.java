@@ -5,7 +5,6 @@ import java.io.InputStreamReader;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
-
 import chess.ChessGame;
 import chess.ChessMove;
 import chess.ChessPosition;

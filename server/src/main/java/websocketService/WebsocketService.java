@@ -1,13 +1,12 @@
 package websocketService;
 
+import com.google.gson.Gson;
 import chess.ChessGame;
 import chess.ChessMove;
 import chess.ChessPiece;
 import chess.ChessPosition;
-import com.google.gson.Gson;
-import dataAccess.*;
-import logging.ServerLogger;
 import model.GameData;
+import dataAccess.*;
 import webSocketMessages.serverMessages.*;
 
 public class WebsocketService {
@@ -101,7 +100,6 @@ public class WebsocketService {
                         try {
                             if (gameDAO.isPlayerColor(gameID, username, color)) {
                                 ChessGame.TeamColor currTeamTurn = gameDAO.getCurrTeamTurn(gameID);
-                                ServerLogger.logger.info("Before making move, currTeamTurn: " + currTeamTurn);
                                 if (currTeamTurn == null) {
                                     throw new DataAccessException("Error: game is over");
                                 } else if (currTeamTurn != color) {
@@ -113,7 +111,6 @@ public class WebsocketService {
                                             username + "\" moved a " + movedPiece.getPieceType() + " from " +
                                             positionToCoord(move.getStartPosition()) + " to " +
                                             positionToCoord(move.getEndPosition()) + ".");
-                                    ServerLogger.logger.info("After making move, currTeamTurn: " + gameDAO.getCurrTeamTurn(gameID));
                                 }
                             } else {
                                 throw new DataAccessException("Bad move request");
