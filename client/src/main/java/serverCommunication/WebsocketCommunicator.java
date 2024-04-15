@@ -63,7 +63,7 @@ public class WebsocketCommunicator extends Endpoint {
                         GameData gameData = msg.getGame();
                         setGameData(gameData);
                         ChessBoard board = new Gson().fromJson(gameData.game(), ChessGame.class).getBoard();
-                        System.out.println(BoardToStringUtil.getBoard(board, playerGameColor));
+                        System.out.println("\n" + BoardToStringUtil.getBoard(board, playerGameColor));
                     }
                     case ERROR -> {
                         ServerErrorMessage msg = (ServerErrorMessage) serverMessage;

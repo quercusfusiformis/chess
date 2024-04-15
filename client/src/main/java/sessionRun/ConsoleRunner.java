@@ -84,9 +84,9 @@ public class ConsoleRunner {
     }
 
     private void printWSSessionMenu() {
-        String printString = String.format("""
+        String printString = """
                 
-                %s OPTIONS:
+                GAME OPTIONS:
                     showboard - show board
                     showmoves <COORD> - show available moves for a piece at a position on the board
                     move <COORD> <COORD> - move a piece
@@ -94,7 +94,7 @@ public class ConsoleRunner {
                     resign - forfeit game
                     help - lists available commands
                 
-                """, getUserAuthStatusAsString(this.userAuthorized));
+                """;
         System.out.print(printString);
     }
 
@@ -333,8 +333,6 @@ public class ConsoleRunner {
         if (!gameListIDMap.containsKey(requestedID)) { throw new CommunicationException("Invalid game ID requested. List games and try again.\n"); }
         int gameID = this.gameListIDMap.get(requestedID);
         server.joinGame(new JoinGameRequest(color, gameID), this.userAuthToken);
-        TimeUnit.MILLISECONDS.sleep(250);
-        redrawBoard();
         this.runningWSSession = true;
         this.printWSSessionMenu = true;
     }

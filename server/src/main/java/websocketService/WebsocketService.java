@@ -203,9 +203,9 @@ public class WebsocketService {
                     "\" is in stalemate (has no valid moves). The WHITE player \"" + whiteUsername + "\" wins.");
             gameDAO.setTeamTurnNull(gameID);
         } else if (game.isInCheck(ChessGame.TeamColor.WHITE)) {
-            gameStateMessage = new ServerNotification("The WHITE player \"" + whiteUsername + "\"is in check.");
+            gameStateMessage = new ServerNotification("The WHITE player \"" + whiteUsername + "\" is in check.");
         } else if (game.isInCheck(ChessGame.TeamColor.BLACK)) {
-            gameStateMessage = new ServerNotification("The BLACK player \"" + blackUsername + "\"is in check.");
+            gameStateMessage = new ServerNotification("The BLACK player \"" + blackUsername + "\" is in check.");
         }
         return gameStateMessage;
     }
