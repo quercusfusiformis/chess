@@ -2,10 +2,13 @@ package serverCommunication;
 
 import chess.ChessBoard;
 import chess.ChessGame;
+import chess.ChessPiece;
+import chess.ChessPosition;
 import com.google.gson.Gson;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
+import java.util.Collection;
 
 import model.GameData;
 import requestRecords.*;
@@ -116,7 +119,18 @@ public class ServerFacade {
 
     public void resign() {}
 
-    public String highlightLegalMoves() { return ""; }
+    public String highlightLegalMoves(ChessPosition position) throws CommunicationException {
+        ChessBoard board = new Gson().fromJson(getWSSessionGame().game(), ChessGame.class).getBoard();
+        ChessGame.TeamColor color = getWSSessionGamePlayerColor();
+        if (color == null) { color = ChessGame.TeamColor.WHITE; }
+        ChessPiece posPiece = board.getPiece(position);
+        if (posPiece != null) {
+            Collection<ChessPosition> validMoves = BoardToStringUtil.getMoveResults(posPiece.pieceMoves(board, position));
+            return BoardToStringUtil.getHighlightedBoard(board, color, position, validMoves);
+        } else {
+            throw new CommunicationException("No piece in that position of the board.");
+        }
+    }
 
     public void clear() throws CommunicationException {
         try {
@@ -143,12 +157,7 @@ public class ServerFacade {
         }
     }
 
-    private ChessGame.TeamColor getWSSessionGamePlayerColor() throws CommunicationException {
-        ChessGame.TeamColor playerGameColor = websocketCommunicator.getPlayerGameColor();
-        if (playerGameColor != null) {
-            return playerGameColor;
-        } else {
-            throw new CommunicationException("Websocket game player color is null");
-        }
+    private ChessGame.TeamColor getWSSessionGamePlayerColor() {
+        return websocketCommunicator.getPlayerGameColor();
     }
 }

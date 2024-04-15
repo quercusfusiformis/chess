@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
 import chess.ChessGame;
+import chess.ChessPosition;
 import requestRecords.*;
 import responseRecords.*;
 import serverCommunication.ServerFacade;
@@ -259,7 +260,7 @@ public class ConsoleRunner {
                     System.out.print("Invalid command input. Type help and format your command according to the menu.\n");
                 }
             } catch (CommunicationException ex) {
-                System.out.print("An error occurred while communicating with the server: " + ex.getMessage() + "\n");
+                System.out.print("An error occurred while processing your request: " + ex.getMessage() + "\n");
             }
         } else { System.out.print(unrecognizedCommandString); }
     }
@@ -374,14 +375,67 @@ public class ConsoleRunner {
     private void leaveGame() throws CommunicationException {
         server.leaveGame(this.userAuthToken);
         this.runningWSSession = false;
+        this.printLoggedInMenu = true;
         System.out.println("Left game.\n");
     }
 
     private void makeMove(ArrayList<String> userArgs) {}
 
+    private boolean isValidCoord(String coord) {
+        boolean isValid = false;
+        if (coord.length() == 2) {
+            String letter = String.valueOf(coord.charAt(0)).toLowerCase();
+            String number = String.valueOf(coord.charAt(1));
+            ArrayList<String> validate = new ArrayList<>(List.of("str", "int"));
+            if (isValidInput(new ArrayList<>(List.of(letter, number)), validate)) {
+                ArrayList<String> letterArray = new ArrayList<>(List.of("a","b","c","d","e","f","g","h"));
+                ArrayList<String> numberArray = new ArrayList<>(List.of("1","2","3","4","5","6","7","8"));
+                isValid = letterArray.contains(letter) && numberArray.contains((number));
+            }
+        }
+        return isValid;
+    }
+
+    private ChessPosition coordToPosition(String coord) throws CommunicationException {
+        if (isValidCoord(coord)) {
+            String letter = String.valueOf(coord.charAt(0)).toLowerCase();
+            String number = String.valueOf(coord.charAt(1));
+            int letterVal = getLetterVal(letter);
+            int numberVal = Integer.parseInt(number);
+            return new ChessPosition(numberVal, letterVal);
+        } else {
+            throw new CommunicationException("Incorrect coordinate formatting (a5, e6, etc)");
+        }
+    }
+
+    private static int getLetterVal(String letter) throws CommunicationException {
+        int letterVal;
+        switch (letter) {
+            case "a" -> letterVal = 1;
+            case "b" -> letterVal = 2;
+            case "c" -> letterVal = 3;
+            case "d" -> letterVal = 4;
+            case "e" -> letterVal = 5;
+            case "f" -> letterVal = 6;
+            case "g" -> letterVal = 7;
+            case "h" -> letterVal = 8;
+            default -> throw new CommunicationException("Incorrect coordinate formatting (a5, e6, etc)");
+        }
+        return letterVal;
+    }
+
     private void resign() {}
 
-    private void highlightLegalMoves(ArrayList<String> userArgs) {}
+    private void highlightLegalMoves(ArrayList<String> userArgs) throws CommunicationException {
+        String posString = userArgs.getFirst();
+        if (isValidCoord(posString)) {
+            ChessPosition pos = coordToPosition(posString);
+            System.out.println(pos);
+            System.out.println(server.highlightLegalMoves(pos));
+        } else {
+            throw new CommunicationException("Incorrect coordinate formatting (a5, e6, etc)");
+        }
+    }
 
     private void setAuthorization(String authToken) {
         this.userAuthToken = authToken;
