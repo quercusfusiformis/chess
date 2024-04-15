@@ -2,9 +2,12 @@ package websocketService;
 
 import chess.ChessGame;
 import chess.ChessMove;
+import chess.ChessPiece;
 import chess.ChessPosition;
+import com.google.gson.Gson;
 import dataAccess.*;
 import logging.ServerLogger;
+import model.GameData;
 import webSocketMessages.serverMessages.*;
 
 public class WebsocketService {
@@ -65,7 +68,7 @@ public class WebsocketService {
                         try {
                             if (gameDAO.isPlayerColor(gameID, username, color)) {
                                 gameDAO.updatePlayerInGame(gameID, null, color);
-                                leaveMessage = new ServerNotification("Player \"" + username + "\" has left the game.");
+                                leaveMessage = new ServerNotification("The " + color + " player \"" + username + "\" has left the game.");
                             } else {
                                 throw new DataAccessException("Bad leave request");
                             }
@@ -105,9 +108,10 @@ public class WebsocketService {
                                     throw new DataAccessException("Error: cannot move on another player's turn");
                                 } else {
                                     gameDAO.makeMove(gameID, move);
+                                    ChessPiece movedPiece = getMovedPiece(gameID, move);
                                     moveMessage = new ServerNotification("The " + color + " player \"" +
-                                            username + "\" moved a piece from position " +
-                                            positionToCoord(move.getStartPosition()) + " to position " +
+                                            username + "\" moved a " + movedPiece.getPieceType() + " from " +
+                                            positionToCoord(move.getStartPosition()) + " to " +
                                             positionToCoord(move.getEndPosition()) + ".");
                                     ServerLogger.logger.info("After making move, currTeamTurn: " + gameDAO.getCurrTeamTurn(gameID));
                                 }
@@ -143,14 +147,12 @@ public class WebsocketService {
                         try {
                             if (gameDAO.isPlayerColor(gameID, username, color)) {
                                 ChessGame.TeamColor currTeamTurn = gameDAO.getCurrTeamTurn(gameID);
-                                ServerLogger.logger.info("Before resigning, currTeamTurn: " + currTeamTurn);
                                 if (currTeamTurn == null) {
                                     throw new DataAccessException("Error: game is over");
                                 } else {
                                     gameDAO.setTeamTurnNull(gameID);
                                     resignMessage = new ServerNotification("The " + color + " player \"" +
                                         username + "\" resigned. ");
-                                    ServerLogger.logger.info("After resigning, currTeamTurn: " + gameDAO.getCurrTeamTurn(gameID));
                                 }
                             } else {
                                 throw new DataAccessException("Bad resign request");
@@ -173,12 +175,46 @@ public class WebsocketService {
         return resignMessage;
     }
 
-    public ServerMessage getGame(int gameID) {
+    public ServerMessage getLoadGameMessage(int gameID) {
         try {
             return new ServerLoadGameMessage(gameDAO.getGame(gameID));
         } catch (DataAccessException ex) {
             return new ServerErrorMessage(ex);
         }
+    }
+
+    public ServerMessage checkAdjustGameState(int gameID) throws DataAccessException {
+        ServerMessage gameStateMessage = null;
+        GameData gameData = gameDAO.getGame(gameID);
+        String whiteUsername = gameData.whiteUsername();
+        String blackUsername = gameData.blackUsername();
+        ChessGame game = new Gson().fromJson(gameData.game(), ChessGame.class);
+        if (game.isInCheckmate(ChessGame.TeamColor.WHITE)) {
+            gameStateMessage = new ServerNotification("The WHITE player \"" + whiteUsername +
+                    "\" is in checkmate. The BLACK player \"" + blackUsername + "\" wins.");
+            gameDAO.setTeamTurnNull(gameID);
+        } else if (game.isInCheckmate(ChessGame.TeamColor.BLACK)) {
+            gameStateMessage = new ServerNotification("The BLACK player \"" + blackUsername +
+                    "\" is in checkmate. The WHITE player \"" + whiteUsername + "\" wins.");
+            gameDAO.setTeamTurnNull(gameID);
+        } else if (game.isInStalemate(ChessGame.TeamColor.WHITE)) {
+            gameStateMessage = new ServerNotification("The WHITE player \"" + whiteUsername +
+                    "\" is in stalemate (has no valid moves). The BLACK player \"" + blackUsername + "\" wins.");
+            gameDAO.setTeamTurnNull(gameID);
+        } else if (game.isInStalemate(ChessGame.TeamColor.BLACK)) {
+            gameStateMessage = new ServerNotification("The BLACK player \"" + blackUsername +
+                    "\" is in stalemate (has no valid moves). The WHITE player \"" + whiteUsername + "\" wins.");
+            gameDAO.setTeamTurnNull(gameID);
+        } else if (game.isInCheck(ChessGame.TeamColor.WHITE)) {
+            gameStateMessage = new ServerNotification("The WHITE player \"" + whiteUsername + "\"is in check.");
+        } else if (game.isInCheck(ChessGame.TeamColor.BLACK)) {
+            gameStateMessage = new ServerNotification("The BLACK player \"" + blackUsername + "\"is in check.");
+        }
+        return gameStateMessage;
+    }
+
+    private ChessPiece getMovedPiece(int gameID, ChessMove move) throws DataAccessException {
+        return new Gson().fromJson(gameDAO.getGame(gameID).game(), ChessGame.class).getBoard().getPiece(move.getEndPosition());
     }
 
     private static String positionToCoord(ChessPosition position) {

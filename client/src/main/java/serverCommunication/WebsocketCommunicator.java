@@ -51,6 +51,7 @@ public class WebsocketCommunicator extends Endpoint {
         WebSocketContainer wsContainer = ContainerProvider.getWebSocketContainer();
         Session session = wsContainer.connectToServer(this, this.connectURI);
         session.addMessageHandler(new MessageHandler.Whole<String>() {
+            @Override
             public void onMessage(String message) {
                 ServerMessage serverMessage = createMessageSerializer().fromJson(message, ServerMessage.class);
                 ServerMessage.ServerMessageType messageType = serverMessage.getServerMessageType();
@@ -99,5 +100,6 @@ public class WebsocketCommunicator extends Endpoint {
         this.session.getBasicRemote().sendText(commandStr);
     }
 
+    @Override
     public void onOpen(Session session, EndpointConfig endpointConfig) {}
 }

@@ -6,6 +6,10 @@ import com.google.gson.JsonDeserializer;
 import spark.Spark;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.NoSuchElementException;
 import httpHandlers.AuthorizationHandler;
 import httpHandlers.DatabaseOperationsHandler;
 import httpHandlers.GameHandler;
@@ -13,11 +17,6 @@ import webSocketMessages.serverMessages.ServerMessage;
 import webSocketMessages.userCommands.*;
 import websocketService.WebsocketService;
 import logging.ServerLogger;
-
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.NoSuchElementException;
 
 @WebSocket
 public class Server {
@@ -105,7 +104,7 @@ public class Server {
                 } else {
                     sendServerMessageToOtherPlayers(session, joinMessage);
                     ServerLogger.logServerMessage(joinMessage, "other game players");
-                    ServerMessage loadGameMessage = wsService.getGame(joinGameID);
+                    ServerMessage loadGameMessage = wsService.getLoadGameMessage(joinGameID);
                     sendServerMessageToSession(session, loadGameMessage);
                     ServerLogger.logServerMessage(loadGameMessage, "game " + joinGameID);
                 }
@@ -121,7 +120,7 @@ public class Server {
                 } else {
                     sendServerMessageToOtherPlayers(session, observeMessage);
                     ServerLogger.logServerMessage(observeMessage, "other game players");
-                    ServerMessage loadGameMessage = wsService.getGame(observeGameID);
+                    ServerMessage loadGameMessage = wsService.getLoadGameMessage(observeGameID);
                     sendServerMessageToSession(session, loadGameMessage);
                     ServerLogger.logServerMessage(loadGameMessage, "session" + observeGameID);
                 }
@@ -149,7 +148,12 @@ public class Server {
                 } else {
                     sendServerMessageToOtherPlayers(session, moveMessage);
                     ServerLogger.logServerMessage(moveMessage, "other game players");
-                    ServerMessage loadGameMessage = wsService.getGame(moveGameID);
+                    ServerMessage gameStateMessage = wsService.checkAdjustGameState(moveGameID);
+                    if (gameStateMessage != null) {
+                        sendServerMessageToGame(moveGameID, gameStateMessage);
+                        ServerLogger.logServerMessage(gameStateMessage, "game " + moveGameID);
+                    }
+                    ServerMessage loadGameMessage = wsService.getLoadGameMessage(moveGameID);
                     sendServerMessageToGame(moveGameID, loadGameMessage);
                     ServerLogger.logServerMessage(loadGameMessage, "game " + moveGameID);
                 }
